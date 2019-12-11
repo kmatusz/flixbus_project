@@ -1,0 +1,7 @@
+TODO:
+1. Create initial db model 
+2. Create codes to populate that
+
+DB: 
+https://app.genmymodel.com/editor/edit/_nTDesBFGEeqDmNBP3mfLQg#
+
