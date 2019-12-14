@@ -1,9 +1,0 @@
-Tables required:
-- Jobs - contains specification of each job that is to execute
-- Log - contains information about execution of each job 
-- Results - contains scraped content
-- Users - contains info about users
-
-
-Jobs:
-Fields:
