@@ -9,21 +9,23 @@ class Crawler():
         self.log = {"fetching": None,
                     "crawling": None}
         self.results = None
+        self._request = None
+        self._parser = None
 
     def get_all(self):
-        request = RequestSinglePage(params=self.params)
-        request.get()
+        self._request = RequestSinglePage(params=self.params)
+        self._request.get()
+        
+        self.log["fetching"] = self._request.errors
 
-        self.log["fetching"] = request.errors
-
-        if not request.correctly_get:
+        if not self._request.correctly_get:
             self.results = None
             return None
 
-        parser = Parser(request.page_content)
-        parser.extract_fields()
-        self.results = parser.results
-        self.log["crawling"] = parser._log
+        self._parser = Parser(self._request.page_content)
+        self._parser.extract_fields()
+        self.results = self._parser.results
+        self.log["crawling"] = self._parser._log
 
     def get_pandas_df(self):
         return pd.DataFrame(self.results)

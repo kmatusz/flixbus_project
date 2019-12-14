@@ -33,6 +33,7 @@ class InitialParser():
         self._raw_page = page
         self.exec_log = []
         self._stop_exec = False
+        self._results_container = None
 
     def _convert_to_bs(self):
         try:
@@ -51,9 +52,10 @@ class InitialParser():
             self._results_container = results_container
 
     def _find_rows(self):
+        
         rows = find_all_safely(self._results_container,
                                "div", class_="ride-available")
-
+        
         if rows is None:
             self._stop_exec = True
 
@@ -62,15 +64,16 @@ class InitialParser():
 
     def extract_rows(self):
 
-        funs_list = OrderedDict({
-            "_convert_to_bs": self._convert_to_bs,
-            "_find_results_container": self._find_results_container,
-            "_find_rows": self._find_rows
-        })
+        
+        funs_list = [
+            ("_convert_to_bs", self._convert_to_bs),
+            ("_find_results_container", self._find_results_container),
+            ("_find_rows", self._find_rows)
+        ]
+        
 
-        for key, fun in funs_list.items():
+        for key, fun in funs_list:
             fun()
-
             if self._stop_exec:
                 self.exec_log.append((key, "error"))
                 self.rows = None
@@ -194,4 +197,4 @@ class Parser:
 
             if len(single_row.fields_with_errors) > 0:
                 self._log["rows_parsing_errors"].append(
-                    (f"Row {idx}", single_row.fields_with_errors))
+                    ("Row {0}".format(idx), single_row.fields_with_errors))
