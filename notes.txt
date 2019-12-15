@@ -1,7 +1,8 @@
-TODO:
-1. Create initial db model 
-2. Create codes to populate that
-
 DB: 
 https://app.genmymodel.com/editor/edit/_nTDesBFGEeqDmNBP3mfLQg#
 
+SQL queries
+Get request params:
+First all active jobs are selected. Then, to every job individual parameters are joined. The parameters are prepared in a way required by the scraper (correct date formats etc.)
+
+Insert results:
