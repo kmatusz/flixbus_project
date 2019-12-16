@@ -49,7 +49,7 @@ ui_get <- fluidPage(
     sidebarLayout(
         sidebarPanel(
             h3("Get scraped results"),
-            actionButton("l", "Fetch results from the database")
+            actionButton("l", "Fetch all requested results from the database")
         ),
         
         mainPanel(
