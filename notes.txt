@@ -6,3 +6,5 @@ Get request params:
 First all active jobs are selected. Then, to every job individual parameters are joined. The parameters are prepared in a way required by the scraper (correct date formats etc.)
 
 Insert results:
+fsfsw
+gddsd
