@@ -1,0 +1,8 @@
+### VS Code ###
+**/.vscode/
+
+###pycache###
+**/__pycache__/
+
+### Pliki rar ###
+**/*.rar
