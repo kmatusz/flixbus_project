@@ -11,7 +11,8 @@ sessions = {} #stores data about current sessions - key is sessionID, value is u
 
 @route('/login')
 def login():
-    return template('login', isLoggedIn=False, isAdmin=False)
+    mes=""
+    return template('login', message =mes, isLoggedIn=False, isAdmin=False)
 
 
 @route('/login', method='POST')
@@ -27,6 +28,7 @@ def do_login():
     tempPass0=c.fetchone()
     tempPass=tempPass0[0]
     conn.close()
+    mes=""
 
     if(tempPass==password):
         response.set_cookie("sessionID", sessionID, secret=secretKey)
@@ -44,12 +46,15 @@ def do_login():
         else:
             redirect('/index')
             return True
-    return template('login', isLoggedIn=False, isAdmin=False)
+    return template('login', message=mes, isLoggedIn=False, isAdmin=False)
 
 
         # if admin - redirect /admin -> selectem z bazy
         # else /index home
-        
+
+
+
+
 def checkAuth():
     sessionID = request.get_cookie("sessionID", secret=secretKey)
     if sessionID in sessions:
@@ -73,11 +78,18 @@ def checkIfAdmin(name):
         return False
 
 
+@route('/logout')
+def logOut():
+    sessionID = request.get_cookie("sessionID", secret=secretKey)
+    response.delete_cookie('sessionID')
+    mes="Logout successful"
+    return template('login', message=mes, isLoggedIn=False, isAdmin=False)
+
 #def logOut():
-#    #usunac wpis z dictonary
-#    sessionID = request.get_cookie("sessionID", secret=secretKey)
-#    response.delete_cookie()
-    #response.delete_cookie(sessionID)
+    #usunac wpis z dictonary
+    #
+    #response.delete_cookie()
+    #
     #del sessions[sessionID]
     #del s.cookies[sessionID]
     #usunac cookiesy

@@ -60,7 +60,7 @@
              % if isLoggedIn or isAdmin:
                <ul class="navbar-nav ml-auto">
 			  		    <li class="add-margin-right navbar-item">
-                  <a class="nav-link" href="#"> Logout</a>
+                  <a class="nav-link" href="/logout"> Logout</a>
 					       </li>
                 </ul>
               %end
