@@ -5,7 +5,7 @@ create table if not exists users(
   admin tinyint not null default 0,
   active tinyint not null default 1,
   time_created date null,
-  unique (name)
+  unique(name)
 );
 create table if not exists jobs(
   job_id int primary key,
@@ -42,17 +42,17 @@ create table if not exists distances(
   references cities (city_id)
 );
 create table if not exists results(
-  request_id int auto increment,
+  result_id int auto increment,
+  request_id int not null,  
   time_created datetime not null,
   start_city int null,
   end_city int null,
   time int null,
   date date null,
-  price int null,
+  price double null,
   changes_number int null,
   primary key (
-    request_id, 
-    time_created
+    result_id
   ),
   foreign key (request_id)
   references requests (request_id),
