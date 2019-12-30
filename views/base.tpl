@@ -30,13 +30,13 @@
             % if isLoggedIn:
               <ul class="navbar-nav">
                 <li class="nav-item">
-                  <a class="nav-link" href="#">Define New Job <span class="sr-only">(current)</span></a>
+                  <a class="nav-link" href="/newjob">Define New Job <span class="sr-only">(current)</span></a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="#">Your Jobs</a>
+                  <a class="nav-link" href="/yourjobs">Your Jobs</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="#">See Job Results</a>
+                  <a class="nav-link" href="/jobresults">See Job Results</a>
                 </li>
               </ul>
              % end

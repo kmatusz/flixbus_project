@@ -16,6 +16,7 @@ def login():
 
 
 @route('/login', method='POST')
+@route('/logout', method='POST')
 def do_login():
     loginName = request.forms.get('username', default=False)
     password = request.forms.get('password', default=False)
@@ -85,15 +86,6 @@ def logOut():
     mes="Logout successful"
     return template('login', message=mes, isLoggedIn=False, isAdmin=False)
 
-#def logOut():
-    #usunac wpis z dictonary
-    #
-    #response.delete_cookie()
-    #
-    #del sessions[sessionID]
-    #del s.cookies[sessionID]
-    #usunac cookiesy
-    #redirect na /login
 
 @route('/')
 @route('/index')
@@ -107,6 +99,44 @@ def index(message=''):
     messDict = {'error': "Something went wrong",
                 'ok': "Everything is ok."}
     return template('index', message=messDict.get(message, ""), loginName=loginName, isLoggedIn=True, isAdmin=False)
+
+
+@route('/newjob')
+def newJob():
+    #authentication check
+    loginName = checkAuth()
+    if checkIfAdmin(loginName):
+        redirect('/adminpanel')
+
+    return template('newjob', isLoggedIn=True, isAdmin=False)
+    #formularz dla wyboru nowego joba
+#<ul>
+#  % for item in basket:
+#    <li>{{item}}</li>
+#  % end
+#</ul>
+
+
+@route('/yourjobs')
+def yourJobs():
+    #authentication check
+    loginName = checkAuth()
+    if checkIfAdmin(loginName):
+        redirect('/adminpanel')
+
+    return template('yourjobs', isLoggedIn=True, isAdmin=False)
+
+
+@route('/jobresults')
+def jobResults():
+    #authentication check
+    loginName = checkAuth()
+    if checkIfAdmin(loginName):
+        redirect('/adminpanel')
+
+    return template('jobresults', isLoggedIn=True, isAdmin=False)
+
+
 
 
 @route('/adminpanel')
