@@ -5,6 +5,8 @@ import string
 import logging
 import logging.handlers
 import sqlite3
+import database_methods as dbm
+import scraper_itegrate as scr
 
 secretKey = "SDMDSIUDSFYODS&TTFS987f9ds7f8sd6DFOUFYWE&FY"
 sessions = {} #stores data about current sessions - key is sessionID, value is username
@@ -123,8 +125,34 @@ def yourJobs():
     loginName = checkAuth()
     if checkIfAdmin(loginName):
         redirect('/adminpanel')
+    userJobList=dbm.getUserJobs(loginName)
 
-    return template('yourjobs', isLoggedIn=True, isAdmin=False)
+    return template('yourjobs', table=userJobList, isLoggedIn=True, isAdmin=False)
+
+
+@route('/yourjobs', method='POST')
+def yourJobs():
+    #authentication check
+    loginName = checkAuth()
+    if checkIfAdmin(loginName):
+        redirect('/adminpanel')
+    userJobList=dbm.getUserJobs(loginName)
+    
+    #get the indexes of 
+    selectedJob = request.POST.getall('checkJob')
+    for i in selectedJob:
+        scr.runJob(i)
+    print(selectedJob)
+
+    doRunAll=request.POST.getall('runAll')
+    if(doRunAll and doRunAll[0]=='Run all'):
+        tempList=[]
+        for i in userJobList:
+            tempList.append(i[0])
+        for i in tempList:
+            scr.runJob(i)
+
+    return template('yourjobs', table=userJobList, isLoggedIn=True, isAdmin=False)
 
 
 @route('/jobresults')

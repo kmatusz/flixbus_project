@@ -53,16 +53,6 @@
                 <input type="date" name="DepFrom" max="2100-12-31" min="2010-01-01" class="form-control" id="inputEmail4" >
             </div>
         </div>
-        <div class="form-row">
-            <div class="form-group col-md-6">
-                <label for="inputEmail4">Arrival date from:</label>
-                <input type="date" name="DepFrom" max="2100-12-31" min="2010-01-01" class="form-control" id="inputEmail4" >
-            </div>
-            <div class="form-group col-md-6">
-                <label for="inputPassword4">Arrival date to:</label>
-                <input type="date" name="DepFrom" max="2100-12-31" min="2010-01-01" class="form-control" id="inputEmail4" >
-            </div>
-        </div>
         <button type="submit" class="btn btn-primary">Submit</button>
      </form>
 

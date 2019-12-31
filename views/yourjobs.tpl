@@ -23,62 +23,50 @@
         <p> You can choose which jobs you want to run </p>
     </div>
 
-    <form>
+    <form action="/yourjobs" method="post">
     <table class="table table-striped">
         <thead>
             <tr>
-            <th scope="col">#</th>
-            <th scope="col">First</th>
-            <th scope="col">Last</th>
-            <th scope="col">Handle</th>
+                <th scope="col">#</th>
+                <th scope="col"> Job Name </th>
+                <th scope="col"> Time of creation </th>
+                <th scope="col"> Time of last run </th>
             </tr>
         </thead>
         <tbody>
-            <tr>
-            <td>
-              <div class="custom-control custom-checkbox">
-                  <input type="checkbox" class="custom-control-input" id="customCheck1">
-                  <label class="custom-control-label" for="customCheck1">1</label>
-              </div>
-            </td>
-            <td>Mark</td>
-            <td>Otto</td>
-            <td>@mdo</td>
-            </tr>
-            <tr>
-            <td>
-              <div class="custom-control custom-checkbox">
-                  <input type="checkbox" class="custom-control-input" id="customCheck2">
-                  <label class="custom-control-label" for="customCheck2">2</label>
-              </div>
-            </td>
-            <td>Jacob</td>
-            <td>Thornton</td>
-            <td>@fat</td>
-            </tr>
-            <tr>
-            <td>
-              <div class="custom-control custom-checkbox">
-                  <input type="checkbox" class="custom-control-input" id="customCheck3">
-                  <label class="custom-control-label" for="customCheck3">3</label>
-              </div>
-            </td>
-            <td>Larry</td>
-            <td>the Bird</td>
-            <td>@twitter</td>
-            </tr>
+            %iter=0
+                %for row in table: 
+                    <%
+                    iter=iter+1
+                    rowNumerId="customCheck"+str(iter)
+                    %>
+                        <tr>
+                            <td>
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" name="checkJob" value={{row[0]}} id={{rowNumerId}}>
+                                    <label class="custom-control-label" for={{rowNumerId}}>{{iter}}</label>
+                                </div>
+                            </td>
+                            %for col in row[1:]:
+                            <td>{{col}}</td>
+                            %end
+                        </tr>
+                %end
+             %end
         </tbody>
-     </table>
-     <button type="submit" class="btn btn-primary mb-2">Run selected jobs</button>
-     </form>
+    </table>
+    <button type="submit" class="btn btn-primary mb-2">Run selected jobs</button>
+    </form>
 
     <div class="row mt-10 align-items-center" style="margin-top:25px">
         <p> You can also run all of your jobs </p>
     </div>
     <div class="row">
-        <input class="btn btn-primary" type="button" value="Run all"> 
+        <form action"" method="post">
+            <input class="btn btn-primary" type="submit" name="runAll" value="Run all"> 
+        </form>
     </div>
-    
+
 
     
 </body>
