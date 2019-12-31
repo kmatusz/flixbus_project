@@ -6,18 +6,18 @@ from bs4 import BeautifulSoup
 
 class RequestSinglePage():
 
-    def __init__(self, params, url="https://shop.flixbus.pl/search?"):
+    def __init__(self, params, base_url="https://shop.flixbus.pl/search?"):
         self.params = params
         self.time_start = None
         self.time_end = None
-        self.url = url
+        self.base_url = base_url
         self.errors = []
 
     def get(self):
 
         self.time_start = datetime.now()
         try:
-            self._resp = get(self.url, params=self.params)
+            self._resp = get(self.base_url, params=self.params)
             self.time_end = datetime.now()
             if self._is_good_response(self._resp):
                 self.correctly_get = True
@@ -50,16 +50,17 @@ class RequestSinglePage():
 
 
 if __name__ == "__main__":
+
     search_params = {
         "departureCity": "7568",
         "arrivalCity": "1915",
-        "route": "Warszawa-Kraków",
-        "rideDate": "20.11.2019",
+        "rideDate": "20.11.2021",
         "adult": "1",
-        "_locale": "pl",
+        "_locale": "pl"
     }
     print("Test w dobrym przypadku")
     a = RequestSinglePage(params=search_params)
     a.get()
+    print(a._resp.url)
     print(len(a.page_content))
     print(a.correctly_get)
