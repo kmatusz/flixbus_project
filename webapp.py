@@ -162,8 +162,32 @@ def jobResults():
     if checkIfAdmin(loginName):
         redirect('/adminpanel')
 
-    return template('jobresults', isLoggedIn=True, isAdmin=False)
+    formList=dbm.getUserJobsNames(loginName)
 
+    return template('jobresults', formularList=formList , showTable=False, isLoggedIn=True, isAdmin=False)
+
+@route('/jobresults', method='POST')
+def jobResults():
+    #authentication check
+    loginName = checkAuth()
+    if checkIfAdmin(loginName):
+        redirect('/adminpanel')
+
+    formList=dbm.getUserJobsNames(loginName)
+
+    selectedJob = request.POST.getall('jobChoosing')
+    #if a job is selected: shows the table with results
+    if(selectedJob):
+        showTable=True
+        resultsForJob = dbm.getResultForJobId(selectedJob[0])
+    
+    
+    #TO DO:
+    #get a proper table with results by jobID
+    #show it to the user in template file
+
+    print(selectedJob)
+    return template('jobresults', formularList=formList, showTable=showTable, resultTable=resultsForJob, isLoggedIn=True, isAdmin=False)
 
 
 

@@ -62,7 +62,7 @@
         <p> You can also run all of your jobs </p>
     </div>
     <div class="row">
-        <form action"" method="post">
+        <form action="" method="post">
             <input class="btn btn-primary" type="submit" name="runAll" value="Run all"> 
         </form>
     </div>

@@ -18,55 +18,49 @@
 		</div>
 	</div>
 
-    <form>
+    <form action="" method="post">
         <div class="form-group">
             <label for="exampleFormControlSelect1">Select job to see its results</label>
-            <select class="form-control" id="exampleFormControlSelect1">
-            <option>1</option>
-            <option>2</option>
-            <option>3</option>
-            <option>4</option>
-            <option>5</option>
+            <select class="form-control" id="exampleFormControlSelect1" name="jobChoosing">
+            %for i in formularList:
+                <option value={{i[0]}}>{{i[1]}}</option>
+            %end
             </select>
         </div>
+        <button type="submit" class="btn btn-primary mb-2">Show results for selected job</button>
     </form>
-
+    
+    %if showTable:
 	<div class="row">
 		<div class="mt-2 col-md-12">
 		<h3>Results for the chosen job</h3>
 		</div>
 	</div>
 
-    <table class="table table-striped">
-        <thead>
-            <tr>
-            <th scope="col">#</th>
-            <th scope="col">First</th>
-            <th scope="col">Last</th>
-            <th scope="col">Handle</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-            <th scope="row">1</th>
-            <td>Mark</td>
-            <td>Otto</td>
-            <td>@mdo</td>
-            </tr>
-            <tr>
-            <th scope="row">2</th>
-            <td>Jacob</td>
-            <td>Thornton</td>
-            <td>@fat</td>
-            </tr>
-            <tr>
-            <th scope="row">3</th>
-            <td>Larry</td>
-            <td>the Bird</td>
-            <td>@twitter</td>
-            </tr>
-        </tbody>
-    </table>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                <th scope="col">Departure city</th>
+                <th scope="col">Arrival city</th>
+                <th scope="col">Departure date</th>
+                <th scope="col">Departure time</th>
+                <th scope="col">Price</th>
+                <th scope="col">Price per km</th>
+                <th scope="col">Date obtained</th>
+                </tr>
+            </thead>
+            <tbody>
+                %for row in resultTable:
+                <tr>
+                     %for col in row:
+                        <td>{{col}}</td>
+                     %end
+                </tr>
+                %end
+                <tr>
+            </tbody>
+        </table>
+    %end
 
 
 </body>
