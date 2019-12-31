@@ -52,10 +52,10 @@ class InitialParser():
             self._results_container = results_container
 
     def _find_rows(self):
-        
+
         rows = find_all_safely(self._results_container,
                                "div", class_="ride-available")
-        
+
         if rows is None:
             self._stop_exec = True
 
@@ -64,13 +64,11 @@ class InitialParser():
 
     def extract_rows(self):
 
-        
         funs_list = [
             ("_convert_to_bs", self._convert_to_bs),
             ("_find_results_container", self._find_results_container),
             ("_find_rows", self._find_rows)
         ]
-        
 
         for key, fun in funs_list:
             fun()
@@ -96,44 +94,45 @@ class RowParser():
 
     def _find_times(self):
 
-        ride_times = find_safely(self._full_row, "div", class_="ride-times")
+        ride_times = find_all_safely(
+            self._full_row, "div", class_="flix-connection__time")
 
         if ride_times is None:
-            self.fields_with_errors.append("departure_time", "arrival_time")
+            self.fields_with_errors.append(["departure_time", "arrival_time"])
 
         else:
-            departure_time = find_safely(ride_times, "div", class_="departure")
-            arrival_time = find_safely(ride_times, "div", class_="arrival")
+            departure_time = ride_times[0]
+            arrival_time = ride_times[1]
 
             if departure_time is None:
                 self.fields_with_errors.append("departure_time")
             else:
-                self.extracted_content["departure_time"] = departure_time.text
+                self.extracted_content["departure_time"] = departure_time.text.rstrip(
+                ).lstrip()
 
             if arrival_time is None:
                 self.fields_with_errors.append("arrival_time")
             else:
-                self.extracted_content["arrival_time"] = arrival_time.text
+                self.extracted_content["arrival_time"] = arrival_time.text.rstrip(
+                ).lstrip()
 
     def _find_stations(self):
 
-        ride_stations = find_safely(
-            self._full_row, "div", class_="ride-station-names")
+        ride_stations = find_all_safely(
+            self._full_row, "div", class_="station-name-label")
 
         if ride_stations is None:
             self.fields_with_errors.append(
-                "departure_station", "arrival_station")
+                ["departure_station", "arrival_station"])
 
         else:
-            departure_station = find_safely(
-                ride_stations, "div", class_="departure-station-name")
+            departure_station = ride_stations[0]
             if departure_station is None:
                 self.fields_with_errors.append("departure_station")
             else:
                 self.extracted_content["departure_station"] = departure_station.text
 
-            arrival_station = find_safely(
-                ride_stations, "div", class_="arrival-station-name")
+            arrival_station = ride_stations[1]
 
             if arrival_station is None:
                 self.fields_with_errors.append("arrival_station")
@@ -152,7 +151,7 @@ class RowParser():
     def _sanitize_price(self, price_text):
         # Funkcja do doprowadzenia ceny do sensownego rezultatu
 
-        return price_text.split("\xa0zł")[0]
+        return price_text.split("\xa0zł")[0].rstrip().lstrip()
 
     def extract_fields(self):
         funs_list = [
