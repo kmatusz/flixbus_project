@@ -1,6 +1,7 @@
 
 import sqlite3
 import time
+import datetime
 
 #connect to test_db.db database
 #more important while running those functions
@@ -82,37 +83,56 @@ def pushJobToDb(loginName, jobName):
     conn = sqlite3.connect('test_db.db')
     c = conn.cursor()  
     c.execute("""INSERT INTO jobs (user_created, time_created, job_name)
-                VALUES ('"""+str(userId)+"', datetime('"+timeCreated+")', '"+jobName+"')")
+                VALUES ('"""+str(userId)+"', datetime('"+timeCreated+"'), '"+jobName+"')")
     conn.commit()
     conn.close()
 
     return True
-    
 
-#everything in a string format as an entry
-def requestFromJob(jobName, start, end, startDate, endDate):
-    #getting the job_id
+#get jobId for a given jobName
+def getJobIdByJobName(jobName):
     conn = sqlite3.connect('test_db.db')
     c = conn.cursor()  
     c.execute("SELECT job_id FROM jobs WHERE job_name='"+jobName+"'")
     jobIdList=c.fetchone()
     conn.close()
     jobId=jobIdList[0]
-    
+    return jobId
+
+#everything in a string format as an entry
+#only cities: start end can be int
+def requestFromJob(jobName, startCity, endCity, startDate, endDate):
     #getting the job_id
-
-
-
+    jobId = getJobIdByJobName(jobName)
+    
     #date management
-    start = datetime.datetime.strptime(date1, '%Y-%m-%d')
-    end = datetime.datetime.strptime(date2, '%Y-%m-%d')
+    start = datetime.datetime.strptime(startDate, '%Y-%m-%d')
+    end = datetime.datetime.strptime(endDate, '%Y-%m-%d')
     step = datetime.timedelta(days=1)
 
+    #getting a list with possible dates for a loop
     timeList=[]
-
     while start <= end:
         timeList.append(str(start.date()))
         start += step
+
+    conn = sqlite3.connect('test_db.db')
+    c = conn.cursor()  
+
+    for i in range(len(timeList)):
+        c.execute("""INSERT INTO requests (job_id, start_city, end_city, date)
+            VALUES (' """+str(jobId)+" ', '"+str(startCity)+"', '"+str(endCity)+"', date('"+timeList[i]+"'))")
+    
+    conn.commit()
+    conn.close()
+    
+    return True
+
+
+
+
+
+    
 
 
 # Save (commit) the changes

@@ -22,8 +22,8 @@ def login():
 @route('/login', method='POST')
 @route('/logout', method='POST')
 def do_login():
-    loginName = request.forms.get('username', default=False)
-    password = request.forms.get('password', default=False)
+    loginName = request.forms.getunicode('username', default=False)
+    password = request.forms.getunicode('password', default=False)
     sessionID = ''.join(random.choice(
         string.ascii_uppercase + string.digits) for _ in range(18))
 
@@ -138,7 +138,7 @@ def newJobP():
     curTime = datetime.datetime.now()
 
     #getting data from the formular
-    jobName = request.forms.get('JobNameDefine', default=False)
+    jobName = request.forms.getunicode('JobNameDefine', default=False) #allowing for special letters in utf8
     depCity = request.forms.get('DepCity', default=False)
     arrCity = request.forms.get('ArrCity', default=False)
     dateFromStr = request.forms.get('DepFrom', default=False) 
@@ -171,16 +171,19 @@ def newJobP():
     if(dateFrom>dateTo):
         mes="Set valid departure date interval!"
         return template('newjob', message=mes, cityList=citiesList, isLoggedIn=True, isAdmin=False)
-    
-
-    dbm.pushJobToDb(loginName, jobName)
-    dbm.requestFromJob(jobName, depCity, arrCity, dateFrom, dateTo)
-
+        
     #validation done
-    #now generate requests for a job 
-    #fill out the database
-    #run the scrapper
-    
+
+    #generate new record in jobs table
+    dbm.pushJobToDb(loginName, jobName)
+
+    #generate corresponding records in requests table for a given jobName
+    dbm.requestFromJob(jobName, depCity, arrCity, dateFromStr, dateToStr)
+
+    #preparing for scrapper work - get the job_id from database
+    jobForScrapper=dbm.getJobIdByJobName(jobName)
+    #run scrapper
+    scr.runJob(jobForScrapper)
 
     return template('newjob', message="ok", cityList=citiesList, isLoggedIn=True, isAdmin=False)
 
