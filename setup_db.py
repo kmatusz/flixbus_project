@@ -8,9 +8,7 @@ class DB:
         self.conn = sqlite3.connect(self.db_path)
         self.c = self.conn.cursor()
         path = "db/scripts/"
-        self.setup_scripts_paths = ["create_tables.sql",
-                                   "create_views.sql",
-                                   "create_triggers.sql"]
+        self.setup_scripts_paths = ["export_schema_data.sql"]
         self.setup_scripts_paths = [path + i for i in self.setup_scripts_paths]
         
     def close(self):
@@ -23,7 +21,7 @@ class DB:
     def run_setup_scripts(self):
         
         for path in self.setup_scripts_paths:
-            with open(path) as f:
+            with open(path, encoding = "UTF-8") as f:
                 query = f.readlines()
                 self.c.executescript(''.join(query))
                 
@@ -59,7 +57,7 @@ class DB:
 
 
 
-def setup_db(path = "db/test_db.db"):
+def setup_db(path = "test_db.db"):
     db = DB(path)
     db.run_setup_scripts()
     db.insert_initial_data()
