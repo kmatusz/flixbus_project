@@ -26,6 +26,7 @@ class Crawler():
         self._parser.extract_fields()
         self.results = self._parser.results
         self.log["crawling"] = self._parser._log
+        self.results_df = pd.DataFrame(self.results)
 
     def get_pandas_df(self):
-        return pd.DataFrame(self.results)
+        return self.results_df
