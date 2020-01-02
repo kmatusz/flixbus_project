@@ -6,6 +6,7 @@
 <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 
+
 </head>
 
 <body>
@@ -30,7 +31,7 @@
                             </div>
                             <div class="form-group">
                                 <label for="password" class="text-info">Password:</label><br>
-                                <input type="text" name="password" id="password" class="form-control">
+                                    <input type="password" name="password" id="password" class="form-control" data-toggle="password">
                             </div>
                             <div class="form-group">
                                 <form action="" method="post">
@@ -43,6 +44,8 @@
             </div>
         </div>
     </div>
+
+
 </body>
 
 </html>

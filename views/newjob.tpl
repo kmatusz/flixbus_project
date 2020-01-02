@@ -20,42 +20,53 @@
 		</div>
 	</div>
 
-    <form>     
+        % if (message=="ok"):
+             <div class="alert alert-success" role="alert">
+                Your new search job was defined correctly. Your data is now retrieved.
+             </div>
+         % end
+
+
+        % if (message!="" and message!="ok"):
+             <div class="alert alert-warning" role="alert">
+                {{message}}
+             </div>
+         % end
+
+    <form id="NewJob-form" class="form" action="" method="post">     
         <div class="form-group">
             <label for="JobNameDefine">Job name</label>
-            <input type="text" class="form-control" id="JobNameDefine" placeholder="Define your search title">
+            <input type="text" class="form-control" id="JobNameDefine" name="JobNameDefine" placeholder="Define your search title">
         </div>
         <div class="form-group">
-            <label for="exampleFormControlSelect1">Departure City</label>
-            <select class="form-control" id="exampleFormControlSelect1">
-            <option>1</option>
-            <option>2</option>
-            <option>3</option>
-            <option>4</option>
-            <option>5</option>
+            <label for="DepartureCitySelect">Departure City</label>
+            <select class="form-control" id="DepartureCitySelect" name="DepCity">
+                <option value=''> </option>
+            %for i in cityList:
+                <option value={{i[0]}}>{{i[1]}}</option>
+            %end
             </select>
         </div>
         <div class="form-group">
-            <label for="exampleFormControlSelect1">Arrival City</label>
-            <select class="form-control" id="exampleFormControlSelect1">
-            <option>1</option>
-            <option>2</option>
-            <option>3</option>
-            <option>4</option>
-            <option>5</option>
+            <label for="ArrivalCitySelect">Arrival City</label>
+            <select class="form-control" id="ArrivalCitySelect" name="ArrCity">
+                <option value=''> </option>
+            %for i in cityList:
+                <option value={{i[0]}}>{{i[1]}}</option>
+            %end
             </select>
         </div>        
         <div class="form-row">
             <div class="form-group col-md-6">
-                <label for="inputEmail4">Departure date from:</label>
+                <label for="DepFrom">Departure date from:</label>
                 <input type="date" name="DepFrom" max="2100-12-31" min="2010-01-01" class="form-control" id="inputEmail4" >
             </div>
             <div class="form-group col-md-6">
-                <label for="inputPassword4">Departure date to:</label>
-                <input type="date" name="DepFrom" max="2100-12-31" min="2010-01-01" class="form-control" id="inputEmail4" >
+                <label for="DepTo">Departure date to:</label>
+                <input type="date" name="DepTo" max="2100-12-31" min="2010-01-01" class="form-control" id="inputEmail4" >
             </div>
         </div>
-        <button type="submit" class="btn btn-primary">Submit</button>
+        <button type="submit" class="btn btn-primary">Create and run your job</button>
      </form>
 
 

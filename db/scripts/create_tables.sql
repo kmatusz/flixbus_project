@@ -8,7 +8,7 @@ create table if not exists users(
   unique(name)
 );
 create table if not exists jobs(
-  job_id int primary key,
+  job_id int primary key autoincrement,
   user_created int null,
   active tinyint null default 1,
   time_created datetime null,
@@ -18,7 +18,7 @@ create table if not exists jobs(
   references users (user_id)
 );
 create table if not exists requests(
-  request_id int primary key,
+  request_id int primary key autoincrement,
   job_id int null,
   start_city int null,
   end_city int null,
@@ -42,7 +42,7 @@ create table if not exists distances(
   references cities (city_id)
 );
 create table if not exists results(
-  result_id int auto increment,
+  result_id int autoincrement,
   request_id int not null,  
   time_created datetime not null,
   start_city int null,
@@ -77,7 +77,7 @@ create table if not exists execution_logs(
   references requests (request_id)
 );
 create table if not exists working_days(
-  date int primary key,
+  date date primary key,
   weekday int null,
   working tinyint null
 );

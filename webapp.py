@@ -1,5 +1,6 @@
 from bottle import Bottle, route, run, template, get, post, debug, static_file, request, redirect, response
 import time
+import datetime
 import random
 import string
 import logging
@@ -10,6 +11,7 @@ import scraper_itegrate as scr
 
 secretKey = "SDMDSIUDSFYODS&TTFS987f9ds7f8sd6DFOUFYWE&FY"
 sessions = {} #stores data about current sessions - key is sessionID, value is username
+
 
 @route('/login')
 def login():
@@ -112,8 +114,75 @@ def newJob():
     if checkIfAdmin(loginName):
         redirect('/adminpanel')
 
-    return template('newjob', isLoggedIn=True, isAdmin=False)
+    #change this to -> all cities
+    citiesList=dbm.getCityNames()
+    
+    mes='' #default message -> empty
+    #if new job run correctly -> message success
+    #if date wrong -> message date
+
+    return template('newjob', message=mes, cityList=citiesList, isLoggedIn=True, isAdmin=False)
     #formularz dla wyboru nowego joba
+
+@route('/newjob', method='POST')
+def newJobP():
+    #authentication check
+    loginName = checkAuth()
+    if checkIfAdmin(loginName):
+        redirect('/adminpanel')
+
+    #change this to -> all cities
+    citiesList=dbm.getCityNames()
+
+    #setting the current date
+    curTime = datetime.datetime.now()
+
+    #getting data from the formular
+    jobName = request.forms.get('JobNameDefine', default=False)
+    depCity = request.forms.get('DepCity', default=False)
+    arrCity = request.forms.get('ArrCity', default=False)
+    dateFromStr = request.forms.get('DepFrom', default=False) 
+    dateToStr = request.forms.get('DepTo', default=False)
+
+    if(jobName==''):
+        mes = "Job name cannot be empty!"
+        return template('newjob', message=mes, cityList=citiesList, isLoggedIn=True, isAdmin=False)
+
+    if(depCity=='' or arrCity==''):
+        mes = "Cities of arrival and departure need to be set."
+        return template('newjob', message=mes, cityList=citiesList, isLoggedIn=True, isAdmin=False)
+
+    if(depCity==arrCity):
+        mes = "Cities of arrival and departure must differ."
+        return template('newjob', message=mes, cityList=citiesList, isLoggedIn=True, isAdmin=False)
+
+    if( (dateFromStr=='') or (dateToStr=='')):
+        mes = "The date interval needs to be specified."
+        return template('newjob', message=mes, cityList=citiesList, isLoggedIn=True, isAdmin=False)
+
+    #date as a str - need to convert
+    dateFrom = datetime.datetime.strptime(dateFromStr, '%Y-%m-%d').date()
+    dateTo = datetime.datetime.strptime(dateToStr, '%Y-%m-%d').date()
+
+    if(dateFrom<=curTime.date()):
+        mes="You can only define a new search job for future dates! Remember about setting the right date interval."
+        return template('newjob', message=mes, cityList=citiesList, isLoggedIn=True, isAdmin=False)
+
+    if(dateFrom>dateTo):
+        mes="Set valid departure date interval!"
+        return template('newjob', message=mes, cityList=citiesList, isLoggedIn=True, isAdmin=False)
+    
+
+    dbm.pushJobToDb(loginName, jobName)
+    dbm.requestFromJob(jobName, depCity, arrCity, dateFrom, dateTo)
+
+    #validation done
+    #now generate requests for a job 
+    #fill out the database
+    #run the scrapper
+    
+
+    return template('newjob', message="ok", cityList=citiesList, isLoggedIn=True, isAdmin=False)
 
 
 #standard version of a yourjobs page -> generating the basic view 
