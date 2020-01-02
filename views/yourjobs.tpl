@@ -14,12 +14,14 @@
 <body>
 	<div class="row ">
 		<div class="mt-2 col-md-12" style="margin-top:15px">
+        <h3 class="text-center text-white pt-5">   </h3>
 		<h3>Here you can see your defined jobs and run them</h3>
+        <h3 class="text-center text-white pt-5">   </h3>
 		</div>
 	</div>
     
 
-    <div class="row align-items-center" style="margin-top:45px">
+    <div class="row align-items-center" style="margin-top:15px">
         <p> You can choose which jobs you want to run </p>
     </div>
 

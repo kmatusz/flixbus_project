@@ -9,14 +9,20 @@
 </head>
 
 
-% rebase('base.tpl', title='Python')
+% rebase('base.tpl', title='Users landing page')
 
 <body>
 	<div class="row">
 		<div class="col-md-12">
 		<h3>{{message}}</h3>
-		Hello {{loginName}}
+		
+		<h3 class="text-center text-white pt-5">   </h3>
+		<h3>Hello {{loginName}} </h3>
+		<h3 class="text-center text-white pt-5">   </h3>
 		</div>
+
+
+
 	</div>
 </body>
 </html>

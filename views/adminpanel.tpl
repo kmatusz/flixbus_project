@@ -15,8 +15,10 @@
 <body>
 	<div class="row">
 		<div class="col-md-12">
-		Hello {{loginName}}
-		Here you can check the current state of FlixScrawler environment.
+		<h3 class="text-center text-white pt-5">   </h3>
+		<h3>Hello {{loginName}} </h3>
+		<h4>Here you can check the current state of FlixScrawler environment. </h4>
+		<h3 class="text-center text-white pt-5">   </h3>
 		</div>
 	</div>
 </body>

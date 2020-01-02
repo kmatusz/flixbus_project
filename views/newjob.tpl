@@ -9,19 +9,21 @@
 </head>
 
 
-% rebase('base.tpl', title='Python')
+% rebase('base.tpl', title='Define new job')
 
 <body>
 	<div class="row">
 		<div class="mt-2 col-md-12">
-		<h3>Here you can define the attributes of your new search</h3>
+		<h3 class="text-center text-white pt-5">   </h3>
+        <h3>Here you can define the attributes of your new search</h3>
+        <h3 class="text-center text-white pt-5">   </h3>
 		</div>
 	</div>
 
     <form>     
         <div class="form-group">
-            <label for="exampleFormControlInput1">Job name</label>
-            <input type="text" class="form-control" id="exampleFormControlInput1" placeholder="Define your search title">
+            <label for="JobNameDefine">Job name</label>
+            <input type="text" class="form-control" id="JobNameDefine" placeholder="Define your search title">
         </div>
         <div class="form-group">
             <label for="exampleFormControlSelect1">Departure City</label>

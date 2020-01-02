@@ -13,7 +13,7 @@ sessions = {} #stores data about current sessions - key is sessionID, value is u
 
 @route('/login')
 def login():
-    mes=""
+    mes="" #do not show any message at this point
     return template('login', message =mes, isLoggedIn=False, isAdmin=False)
 
 
@@ -25,18 +25,23 @@ def do_login():
     sessionID = ''.join(random.choice(
         string.ascii_uppercase + string.digits) for _ in range(18))
 
+    #checking if password is correct - connecting to the database
     conn = sqlite3.connect('db/test_db.db')
     c = conn.cursor()
     c.execute("SELECT password FROM users WHERE name = '"+loginName+"'")
     tempPass0=c.fetchone()
     tempPass=tempPass0[0]
     conn.close()
-    mes=""
 
     if(tempPass==password):
+        #Setting cookies for the session
+        #adding to the dictionary sessions{} 
+        #key is sessionID (cookie number) and value is loginName
         response.set_cookie("sessionID", sessionID, secret=secretKey)
         sessions[sessionID] = loginName
         
+        #check if a user is and admin -> to redirect to admin panel
+        #non-admin users are redirected to /index
         conn = sqlite3.connect('db/test_db.db')
         c = conn.cursor()
         c.execute("SELECT admin FROM users WHERE name = '"+loginName+"'")
@@ -49,38 +54,37 @@ def do_login():
         else:
             redirect('/index')
             return True
-    return template('login', message=mes, isLoggedIn=False, isAdmin=False)
+    return template('login', message='', isLoggedIn=False, isAdmin=False)
 
-
-        # if admin - redirect /admin -> selectem z bazy
-        # else /index home
-
-
-
-
+#defining the function for Authorization check 
+#this uses cookies set at the login phase
+#if sessionID and loginName check, than authorization is granted
+#if not -> redirecting to /login page
 def checkAuth():
     sessionID = request.get_cookie("sessionID", secret=secretKey)
     if sessionID in sessions:
         return sessions[sessionID]
     else:
         return redirect('/login')
-    #return True #jeśli jest sesrion id w dictionary
-    #jak nie to false -> redirest do login
 
+#defining function for admin check
+#not only login is necessery to get to the admin pages, but also the admin rights
 def checkIfAdmin(name):
+    #check the user info in the database
     conn = sqlite3.connect('db/test_db.db')
     c = conn.cursor()
     c.execute("SELECT admin FROM users WHERE name = '"+name+"'")
     tempIfAdmin0=c.fetchone()
     tempIfAdmin=tempIfAdmin0[0]
     conn.close()
+    #security check for admin rights
     if(tempIfAdmin==1):
         return True
     else:
-        #redirect('/login')
         return False
 
-
+#page logout, with message about the logout success 
+#returns the same template that login does, but with a pop up message
 @route('/logout')
 def logOut():
     sessionID = request.get_cookie("sessionID", secret=secretKey)
@@ -88,19 +92,17 @@ def logOut():
     mes="Logout successful"
     return template('login', message=mes, isLoggedIn=False, isAdmin=False)
 
-
+#landing page for users
 @route('/')
 @route('/index')
 @route('/index/')
 @route('/index/<message>')
-def index(message=''):
+def index():
     loginName = checkAuth()
     if checkIfAdmin(loginName):
         redirect('/adminpanel')
-    #loginName = 'adam0'
-    messDict = {'error': "Something went wrong",
-                'ok': "Everything is ok."}
-    return template('index', message=messDict.get(message, ""), loginName=loginName, isLoggedIn=True, isAdmin=False)
+    
+    return template('index', message='', loginName=loginName, isLoggedIn=True, isAdmin=False)
 
 
 @route('/newjob')
@@ -112,13 +114,10 @@ def newJob():
 
     return template('newjob', isLoggedIn=True, isAdmin=False)
     #formularz dla wyboru nowego joba
-#<ul>
-#  % for item in basket:
-#    <li>{{item}}</li>
-#  % end
-#</ul>
 
 
+#standard version of a yourjobs page -> generating the basic view 
+#custom userJobList is retrieved from database
 @route('/yourjobs')
 def yourJobs():
     #authentication check
@@ -129,21 +128,22 @@ def yourJobs():
 
     return template('yourjobs', table=userJobList, isLoggedIn=True, isAdmin=False)
 
-
+#this page allows for retrieving the user's action on a webpage
+#pressing the button activates the function connected to scrapper
 @route('/yourjobs', method='POST')
-def yourJobs():
+def yourJobsP():
     #authentication check
     loginName = checkAuth()
     if checkIfAdmin(loginName):
         redirect('/adminpanel')
     userJobList=dbm.getUserJobs(loginName)
     
-    #get the indexes of 
+    #get the indexes of jobs chosen by a user
     selectedJob = request.POST.getall('checkJob')
     for i in selectedJob:
         scr.runJob(i)
-    print(selectedJob)
 
+    #action started by button to run all the user's jobs
     doRunAll=request.POST.getall('runAll')
     if(doRunAll and doRunAll[0]=='Run all'):
         tempList=[]
@@ -154,7 +154,7 @@ def yourJobs():
 
     return template('yourjobs', table=userJobList, isLoggedIn=True, isAdmin=False)
 
-
+#first version of JobResults - user can choose a Job for which results will be showed
 @route('/jobresults')
 def jobResults():
     #authentication check
@@ -166,8 +166,9 @@ def jobResults():
 
     return template('jobresults', formularList=formList , showTable=False, isLoggedIn=True, isAdmin=False)
 
+#this allows for generating the result table for chosen Job (form submitted)
 @route('/jobresults', method='POST')
-def jobResults():
+def jobResultsP():
     #authentication check
     loginName = checkAuth()
     if checkIfAdmin(loginName):
@@ -180,24 +181,27 @@ def jobResults():
     if(selectedJob):
         showTable=True
         resultsForJob = dbm.getResultForJobId(selectedJob[0])
-    
-    
-    #TO DO:
-    #get a proper table with results by jobID
-    #show it to the user in template file
 
-    print(selectedJob)
-    return template('jobresults', formularList=formList, showTable=showTable, resultTable=resultsForJob, isLoggedIn=True, isAdmin=False)
+    #HERE should be also Excel File generated and ready for download
+    #tutorial: https://xlsxwriter.readthedocs.io/tutorial03.html
+
+    return template('jobresults', formularList=formList, showTable=showTable, 
+            resultTable=resultsForJob, isLoggedIn=True, isAdmin=False)
 
 
-
+#landing page for the admin
 @route('/adminpanel')
 def admin():
     loginName = checkAuth()
     if checkIfAdmin(loginName)==False:
         redirect('/login')
+    #isLoggedIn = False, because it's a variable controling for standard users 
+    #this is used in a html generation via template (navbar conditioning)
     return template('adminpanel', loginName=loginName, isLoggedIn=False, isAdmin=True)
 
+
+#all the other admin views
+#... to be filled out by Kamil
 
 
 run(host='localhost', port=8060)
