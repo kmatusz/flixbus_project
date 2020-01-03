@@ -2,6 +2,7 @@
 import sqlite3
 import time
 import datetime
+import xlsxwriter
 
 #connect to test_db.db database
 #more important while running those functions
@@ -56,6 +57,23 @@ def getResultForJobId(jobId):
     conn.close()    
     return listOfResults
 
+def prepareExcel(resultList):
+    # Some sample data.
+    #data = ('Foo', 'Bar', 'Baz')
+    header = ('Departure city', 'Arrival city', 'Departure date', 
+        'Departure time', 'Price', 'Price per km', 'Date obtained')
+
+    workbook = xlsxwriter.Workbook('./resultFile/result.xlsx')
+    worksheet = workbook.add_worksheet()
+
+    worksheet.write_row('A1', header)
+
+    for i in range(len(resultList)):
+        row=i+1
+        worksheet.write_row(row, 0, resultList[i])  
+    workbook.close()
+
+    return True
 
 #for a dropdown lists with defined city names -> in NewJob view
 def getCityNames():

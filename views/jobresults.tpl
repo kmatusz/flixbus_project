@@ -32,7 +32,14 @@
         <button type="submit" class="btn btn-primary mb-2">Show results for selected job</button>
     </form>
     
-    %if showTable:
+    
+    %if (showTable and resultTable==[]):
+        <div class="alert alert-secondary" role="alert">
+            Results for this job are not available yet. Go to YourJobs page and run the scrapper to get them.
+        </div>
+    %end
+
+    %if showTable and resultTable!=[]:
 	<div class="row">
 		<div class="mt-2 col-md-12">
 		<h3>Results for the chosen job</h3>
@@ -62,6 +69,13 @@
                 <tr>
             </tbody>
         </table>
+        <div class="mt-2 col-md-12">
+            <h3 class="text-center text-white pt-5">   </h3>
+            <div>
+            <a class="btn btn-primary" href="/download" role="button">Download as excel file</a>
+            </div>
+            <h3 class="text-center text-white pt-5">   </h3>
+        </div>
     %end
 
 

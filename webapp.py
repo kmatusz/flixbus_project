@@ -8,6 +8,7 @@ import logging.handlers
 import sqlite3
 import database_methods as dbm
 import scraper_itegrate as scr
+import xlsxwriter
 
 secretKey = "SDMDSIUDSFYODS&TTFS987f9ds7f8sd6DFOUFYWE&FY"
 sessions = {} #stores data about current sessions - key is sessionID, value is username
@@ -253,12 +254,25 @@ def jobResultsP():
     if(selectedJob):
         showTable=True
         resultsForJob = dbm.getResultForJobId(selectedJob[0])
+        dbm.prepareExcel(resultsForJob)
 
     #HERE should be also Excel File generated and ready for download
     #tutorial: https://xlsxwriter.readthedocs.io/tutorial03.html
 
     return template('jobresults', formularList=formList, showTable=showTable, 
-            resultTable=resultsForJob, isLoggedIn=True, isAdmin=False)
+            resultTable=resultsForJob, loginName=loginName, isLoggedIn=True, isAdmin=False)
+
+
+#filepath='result.xlsx' #needs to be changes and passed to function
+@route('/download')
+def download():
+    #only for logged in users
+    loginName = checkAuth()
+    if checkIfAdmin(loginName):
+        redirect('/adminpanel')
+
+    #path relative to working directory
+    return static_file(filename='result.xlsx', root='./resultFile', download=True)
 
 
 #landing page for the admin
