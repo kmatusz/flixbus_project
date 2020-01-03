@@ -81,16 +81,61 @@ class SingleCrawlerWithDB(Crawler):
         self.results_pd_raw = self.results_df
 
 
+def run(db, idx):
+    # Get parameters from db table (requests)
+    params_handler = ParamsHandler(db)
+    params_handler.obtain_params_from_db()
+
+    # print(params_handler.values_in_db)
+    # print(params_handler.params_list)
+    # print(params_handler.get_params_for_crawler())
+    print(idx)
+    # Download the data
+    crawler = SingleCrawlerWithDB(db, params_handler.params_list[idx])
+    crawler.crawl()
+    # print(crawler.log)
+    # print(crawler.results_pd_raw)
+
+    # Sanitize dataframe (remove wrong values, ensure correct format etc.)
+    sanitizer = dfSanitizer(df=crawler.results_pd_raw)
+    sanitizer.sanitize_df(
+        params_handler.params_list[idx].variable_params, params_handler.params_list[idx].request_id)
+
+    # Show sanitized df
+    print(sanitizer.sanitized_df)
+
+    # Commit crawling to the database table results
+    sanitizer.prepare_for_db()
+    df = sanitizer.df_to_db
+
+    df.to_sql(con=db.conn,
+              name="results",
+              if_exists="append",
+              index=False,
+              dtype={
+                  "request_id": "INT",
+                  "time_created": "DATETIME",
+                  "start_city": "INT",
+                  "end_city": "INT",
+                  "time": "INT",
+                  "date": "DATE",
+                  "price": "DOUBLE",
+                  "changes_number": "INT"
+              })
+
 if __name__ == "__main__":
 
     path_to_db = "test_db.db"
 
-    SETUP_NEEDED = False
+    SETUP_NEEDED = True
 
     db = DB(path_to_db)
 
     if SETUP_NEEDED:
         db.run_setup_scripts()
+
+    for i in range(15):
+        run(db, i)
 
     # Check database working
     # print(db.show_tables())
@@ -104,9 +149,9 @@ if __name__ == "__main__":
     # print(params_handler.values_in_db)
     # print(params_handler.params_list)
     # print(params_handler.get_params_for_crawler())
-
+    idx = 0
     # Download the data
-    crawler = SingleCrawlerWithDB(db, params_handler.params_list[1])
+    crawler = SingleCrawlerWithDB(db, params_handler.params_list[idx])
     crawler.crawl()
     # print(crawler.log)
     # print(crawler.results_pd_raw)
@@ -114,30 +159,29 @@ if __name__ == "__main__":
     # Sanitize dataframe (remove wrong values, ensure correct format etc.)
     sanitizer = dfSanitizer(df=crawler.results_pd_raw)
     sanitizer.sanitize_df(
-        params_handler.params_list[1].variable_params, params_handler.params_list[1].request_id)
-    
+        params_handler.params_list[idx].variable_params, params_handler.params_list[idx].request_id)
+
     # Show sanitized df
     print(sanitizer.sanitized_df)
-
 
     # Commit crawling to the database table results
     sanitizer.prepare_for_db()
     df = sanitizer.df_to_db
 
-    df.to_sql(con=db.conn, 
-        name="results",
-        if_exists="append", 
-        index=False,
-    dtype={
-        "request_id": "INT",
-        "time_created": "DATETIME",
-        "start_city": "INT",
-        "end_city": "INT",
-        "time": "INT",
-        "date": "DATE",
-        "price": "DOUBLE",
-        "changes_number": "INT"
-    })
+    df.to_sql(con=db.conn,
+              name="results",
+              if_exists="append",
+              index=False,
+              dtype={
+                  "request_id": "INT",
+                  "time_created": "DATETIME",
+                  "start_city": "INT",
+                  "end_city": "INT",
+                  "time": "INT",
+                  "date": "DATE",
+                  "price": "DOUBLE",
+                  "changes_number": "INT"
+              })
 
     # db._insert_from_data_frame("results", df)
     # db.select_all("results")
