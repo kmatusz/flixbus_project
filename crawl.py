@@ -15,7 +15,7 @@ class Crawler():
     def get_all(self):
         self._request = RequestSinglePage(params=self.params)
         self._request.get()
-        
+
         self.log["fetching"] = self._request.errors
 
         if not self._request.correctly_get:

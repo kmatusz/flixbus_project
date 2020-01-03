@@ -6,16 +6,13 @@ import os
 from setup_db import DB, setup_db, cursor_as_df, execute_to_df
 from sanitizer import dfSanitizer
 
-SETUP_NEEDED = False
-path = "test_db.db"
-
-db = DB(path)
-
-if SETUP_NEEDED:
-    db.run_setup_scripts()
-
 
 class ParamsHandler:
+    '''
+    Class used for getting parameters needed for scraper - 
+    handling the database connection and keeping parameters for the crawler alongside with e.g. request_id
+    '''
+
     def __init__(self, db):
         self.db = db
         self.params_names_from_db = None
@@ -45,6 +42,10 @@ class ParamsHandler:
 
 
 class SingleParam:
+    '''
+    Class containing info about single parameters set (with one request_id)
+    '''
+
     def __init__(self, values_from_db):
         self._constant_params = {
             "adult": "1",
@@ -64,6 +65,10 @@ class SingleParam:
 
 
 class SingleCrawlerWithDB(Crawler):
+    '''
+    Class for crawling with single parameters (to remove?)
+    '''
+
     def __init__(self, db, param):
         self.db = db
         self.param = param
@@ -75,41 +80,68 @@ class SingleCrawlerWithDB(Crawler):
         self.get_all()
         self.results_pd_raw = self.results_df
 
-    def sanitize(self):
-        pass
-
 
 if __name__ == "__main__":
-    print(db.show_tables())
+
+    path_to_db = "test_db.db"
+
+    SETUP_NEEDED = False
+
+    db = DB(path_to_db)
+
+    if SETUP_NEEDED:
+        db.run_setup_scripts()
+
+    # Check database working
+    # print(db.show_tables())
     # print(db.select_all("jobs"))
-    # print(db.select_all("requests"))
+    # print(db.select_all("results"))
+
+    # Get parameters from db table (requests)
     params_handler = ParamsHandler(db)
     params_handler.obtain_params_from_db()
+
     # print(params_handler.values_in_db)
     # print(params_handler.params_list)
-
     # print(params_handler.get_params_for_crawler())
 
-    a = SingleCrawlerWithDB(db, params_handler.params_list[1])
-    a.crawl()
-    # print(a.log)
-    # print(a.results_pd_raw)
+    # Download the data
+    crawler = SingleCrawlerWithDB(db, params_handler.params_list[1])
+    crawler.crawl()
+    # print(crawler.log)
+    # print(crawler.results_pd_raw)
 
-    sanitizer = dfSanitizer(df=a.results_pd_raw)
-    sanitizer.sanitize_df()
-    # sanitizer.prepare_for_db()
-    sanitizer.insert_crawl_params(
-        params_handler.params_list[0].variable_params, params_handler.params_list[0].request_id)
+    # Sanitize dataframe (remove wrong values, ensure correct format etc.)
+    sanitizer = dfSanitizer(df=crawler.results_pd_raw)
+    sanitizer.sanitize_df(
+        params_handler.params_list[1].variable_params, params_handler.params_list[1].request_id)
+    
+    # Show sanitized df
+    print(sanitizer.sanitized_df)
+
+
+    # Commit crawling to the database table results
     sanitizer.prepare_for_db()
     df = sanitizer.df_to_db
 
-    db._insert_from_data_frame("results", df)
-    db.select_all("results")
+    df.to_sql(con=db.conn, 
+        name="results",
+        if_exists="append", 
+        index=False,
+    dtype={
+        "request_id": "INT",
+        "time_created": "DATETIME",
+        "start_city": "INT",
+        "end_city": "INT",
+        "time": "INT",
+        "date": "DATE",
+        "price": "DOUBLE",
+        "changes_number": "INT"
+    })
 
-    # more options can be specified also
+    # db._insert_from_data_frame("results", df)
+    # db.select_all("results")
+
     with pd.option_context('display.max_rows', None, 'display.max_columns', None):
-        print(df)
-    
-
-    # print(params_list[0])
-    # print(obtain_params_from_db(db))
+        # Do not truncate columns
+        print(sanitizer.sanitized_df)

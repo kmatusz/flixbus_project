@@ -5,6 +5,10 @@ from datetime import datetime
 
 
 class dfSanitizer:
+    '''
+    Class for cleaning up the obtained data and preparation to a format required by the database.
+    '''
+
     def __init__(self, df=None):
         self.df = df
         self.sanitized_df = None
@@ -14,11 +18,10 @@ class dfSanitizer:
 #         self.sanitize_station_vec = np.vectorize(sanitize_station)
 
     def init_vectorised_funs(self):
-
+        # Create vectorised version of function sanitizing each obtained column (type of data)
         self.sanitize_station_vec = np.vectorize(self.sanitize_station)
         self.sanitize_price_vec = np.vectorize(self.sanitize_price)
         self.sanitize_time_vec = np.vectorize(self.sanitize_time)
-#         self.sanitize_time_vec = np.vectorize(sanitize_time)
 
     def sanitize_price(self, x):
         if x is None:
@@ -32,6 +35,7 @@ class dfSanitizer:
             if len(stripped) > 10:
                 return None
 
+            # Convert to non-polish notation
             stripped_comma = stripped.replace(",", ".")
 
             number = float(stripped_comma)
@@ -66,59 +70,72 @@ class dfSanitizer:
 
         return stripped
 
-    def sanitize_df(self):
+    def sanitize_df(self, params, request_id):
         self.sanitized_df = self.df.copy()
-        self.sanitized_df.price = self.sanitize_price_vec(
-            self.sanitized_df.price)
-        self.sanitized_df.departure_station = self.sanitize_station_vec(
-            self.sanitized_df.departure_station)
-        self.sanitized_df.arrival_station = self.sanitize_station_vec(
-            self.sanitized_df.arrival_station)
-        self.sanitized_df.departure_time = self.sanitize_time_vec(
-            self.sanitized_df.departure_time)
-        self.sanitized_df.arrival_time = self.sanitize_time_vec(
-            self.sanitized_df.arrival_time)
-        self.sanitized_df["fully_booked"] = self.sanitized_df.price.isna()
+        df = self.sanitized_df
 
-    def insert_crawl_params(self, params, request_id):
-        self.sanitized_df["departure_city"] = params["departureCity"]
-        self.sanitized_df["arrival_city"] = params["arrivalCity"]
-        self.sanitized_df["request_id"] = request_id
-        self.sanitized_df["rideDate"] = params["rideDate"]
-        self.sanitized_df["departure_datetime"] = self.sanitized_df.rideDate + \
-            " " + self.sanitized_df.departure_time
-        self.sanitized_df["departure_datetime"] = pd.to_datetime(
-            self.sanitized_df["departure_datetime"])
-        self.sanitized_df["arrival_datetime"] = self.sanitized_df.rideDate + \
-            " " + self.sanitized_df.arrival_time
-        self.sanitized_df["arrival_datetime"] = pd.to_datetime(
-            self.sanitized_df["arrival_datetime"])
-        self.sanitized_df["time_created"] = datetime.now()
-        self.sanitized_df["changes_number"] = np.nan
+        self.sanitize_initial_columns()
+        self.handle_constant_columns(params, request_id)
+        self.handle_dates()
 
-        mask = self.sanitized_df["arrival_datetime"] < self.sanitized_df["departure_datetime"]
-        masked_df = self.sanitized_df[mask]
-        self.sanitized_df.loc[mask,
-                              "arrival_datetime"] = masked_df.arrival_datetime + pd.DateOffset(days=1)
+        df["fully_booked"] = df.price.isna()
 
-        self.sanitized_df["date"] = self.sanitized_df.departure_datetime.dt.date
-        self.sanitized_df["time"] = self.sanitized_df.departure_datetime.dt.time
-        self.sanitized_df["start_city"] = self.sanitized_df.departure_city
-        self.sanitized_df["end_city"] = self.sanitized_df.arrival_city
+    def sanitize_initial_columns(self):
+        df = self.sanitized_df
 
-    def prepare_for_db(self, simple_structure = True):
+        df.price = self.sanitize_price_vec(df.price)
+
+        df.departure_station = self.sanitize_station_vec(df.departure_station)
+        df.arrival_station = self.sanitize_station_vec(df.arrival_station)
+
+        df.departure_time = self.sanitize_time_vec(df.departure_time)
+        df.arrival_time = self.sanitize_time_vec(df.arrival_time)
+
+    def handle_constant_columns(self, params, request_id):
+        df = self.sanitized_df
+
+        df["departure_city"] = params["departureCity"]
+        df["arrival_city"] = params["arrivalCity"]
+        df["request_id"] = request_id
+        df["rideDate"] = params["rideDate"]
+        df["time_created"] = datetime.now()
+        df["changes_number"] = np.nan
+        df["start_city"] = df.departure_city
+        df["end_city"] = df.arrival_city
+
+
+    def handle_dates(self):
+        df = self.sanitized_df
+
+        df["departure_datetime"] = df.rideDate + " " + df.departure_time
+        df["departure_datetime"] = pd.to_datetime(df["departure_datetime"], format='%d.%m.%Y %H:%M')
+        df["arrival_datetime"] = df.rideDate + " " + df.arrival_time
+        df["arrival_datetime"] = pd.to_datetime(df["arrival_datetime"], format='%d.%m.%Y %H:%M')
+
+        # If arrival is earlier than departure, 
+        # shift arrival for 1 day (cases when travelling around 12 p.m.)
+        mask = df["arrival_datetime"] < df["departure_datetime"]
+        masked_df = df[mask]
+        df.loc[mask, "arrival_datetime"] = masked_df.arrival_datetime + \
+            pd.DateOffset(days=1)
+
+        df["date"] = df.departure_datetime.dt.date
+        df["time"] = df.departure_datetime.dt.time
+
+
+    def prepare_for_db(self, simple_structure=True):
 
         if not simple_structure:
             raise NotImplementedError
 
         self.df_to_db = self.sanitized_df.copy()
         self.df_to_db = self.df_to_db[[
-        "request_id",
-        "time_created",
-        "start_city",
-        "end_city",
-        "time", 
-        "date",
-        "price",
-        "changes_number"
+            "request_id",
+            "time_created",
+            "start_city",
+            "end_city",
+            "time",
+            "date",
+            "price",
+            "changes_number"
         ]]
