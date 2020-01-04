@@ -702,6 +702,50 @@ CREATE TABLE results (
 );
 
 
+-- Table: results2
+CREATE TABLE results2 (
+    result_id          INTEGER  PRIMARY KEY AUTOINCREMENT,
+    request_id         INT                  NOT NULL,
+    time_created       DATETIME             NOT NULL,
+    departure_city     INT,
+    arrival_city       INT,
+    departure_station  INT,
+    arrival_station    INT,
+    departure_datetime     DATETIME,
+    arrival_datetime       DATETIME,
+    price              DOUBLE,
+    changes_number     INT,
+    fully_booked       INT,
+    -- PRIMARY KEY (
+    --     result_id
+    -- ),
+    FOREIGN KEY (
+        request_id
+    )
+    REFERENCES requests (request_id),
+    FOREIGN KEY (
+        departure_city
+    )
+    REFERENCES cities (city_id),
+    FOREIGN KEY (
+        arrival_city
+    )
+    REFERENCES cities (city_id)
+);
+
+
+-- Table: stations
+CREATE TABLE stations (
+    station_id          INTEGER  PRIMARY KEY AUTOINCREMENT,
+    station_name        VARCHAR(50),
+    UNIQUE (
+        station_name
+    )
+);
+
+
+
+
 -- Table: users
 CREATE TABLE users (
     user_id      INT          PRIMARY KEY,

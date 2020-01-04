@@ -3,8 +3,9 @@ from parse import find_all_safely
 import pandas as pd
 import numpy as np
 import os
-from setup_db import DB, setup_db, cursor_as_df, execute_to_df
-from sanitizer import dfSanitizer
+import sys
+from setup_db import DB, cursor_as_df, execute_to_df
+from sanitizer import dfSanitizer, dbSanitizer
 
 
 class ParamsHandler:
@@ -81,111 +82,129 @@ class SingleCrawlerWithDB(Crawler):
         self.results_pd_raw = self.results_df
 
 
-def run(db, idx):
-    # Get parameters from db table (requests)
-    params_handler = ParamsHandler(db)
-    params_handler.obtain_params_from_db()
 
-    # print(params_handler.values_in_db)
-    # print(params_handler.params_list)
-    # print(params_handler.get_params_for_crawler())
-    print(idx)
-    # Download the data
-    crawler = SingleCrawlerWithDB(db, params_handler.params_list[idx])
-    crawler.crawl()
-    # print(crawler.log)
-    # print(crawler.results_pd_raw)
+class jobRunner:
+    def __init__(self, path_to_db = "test_db.db", reset_db = False):
+        self.path_to_db = path_to_db
+        self.reset_db = reset_db
+        self.correctly_setup = False
 
-    # Sanitize dataframe (remove wrong values, ensure correct format etc.)
-    sanitizer = dfSanitizer(df=crawler.results_pd_raw)
-    sanitizer.sanitize_df(
-        params_handler.params_list[idx].variable_params, params_handler.params_list[idx].request_id)
+    def _setup_before_running(self):
+        
+        if self.reset_db and os.path.exists(self.path_to_db):
+            # Clear database completely if needed (remove file)
+            os.remove(self.path_to_db)
 
-    # Show sanitized df
-    print(sanitizer.sanitized_df)
+        self.db = DB(self.path_to_db)
 
-    # Commit crawling to the database table results
-    sanitizer.prepare_for_db()
-    df = sanitizer.df_to_db
+        if self.reset_db:
+            self.db.run_setup_scripts()
 
-    df.to_sql(con=db.conn,
-              name="results",
-              if_exists="append",
-              index=False,
-              dtype={
-                  "request_id": "INT",
-                  "time_created": "DATETIME",
-                  "start_city": "INT",
-                  "end_city": "INT",
-                  "time": "INT",
-                  "date": "DATE",
-                  "price": "DOUBLE",
-                  "changes_number": "INT"
-              })
+        self.params_handler = ParamsHandler(self.db)
+        self.params_handler.obtain_params_from_db()
+
+        self.correctly_setup = True
+        
+
+
+    def run_all_jobs(self):
+        if not self.correctly_setup:
+            self._setup_before_running()
+
+        for params in self.params_handler.params_list:
+            # try:
+            self._run_one_job(params)
+            # except:
+            #     print("error")
+
+    def run_job_from_request_id(self, request_id):
+        if not self.correctly_setup:
+            self._setup_before_running()
+
+        # Filter parameters list and get first parameters set with correct request_id
+        params = next(params for params in 
+            self.params_handler.params_list if 
+            params.request_id == request_id)
+
+
+
+        self._run_one_job(params)
+
+    def _run_one_job(self, params):
+        print(f"running job with params {params.request_id}")
+        # Download the data from web
+        crawler = SingleCrawlerWithDB(self.db, params)
+        crawler.crawl()
+
+        # Sanitize dataframe (remove wrong values, ensure correct format etc.)
+        sanitizer = dfSanitizer(df=crawler.results_pd_raw)
+        sanitizer.sanitize_df(
+            params.variable_params, params.request_id)
+
+        db_sanitizer = dbSanitizer(raw_df = sanitizer.sanitized_df, db = self.db)
+        db_sanitizer.prepare_for_db()
+
+        db_sanitizer.df_to_db.to_sql(con=self.db.conn,
+                                  name="results2",
+                                  if_exists="append",
+                                  index=False)
+
+
+
+
+
+
+
+
 
 if __name__ == "__main__":
 
-    path_to_db = "test_db.db"
+    job_runner = jobRunner(reset_db = True)
+    # job_runner.run_job_from_request_id(4)
+    job_runner.run_all_jobs()
 
-    SETUP_NEEDED = True
+    # if SETUP_NEEDED and os.path.exists(path_to_db):
+    #     # Clear database completely if needed (remove file)
+    #     os.remove(path_to_db)
 
-    db = DB(path_to_db)
+    # db = DB(path_to_db)
 
-    if SETUP_NEEDED:
-        db.run_setup_scripts()
+    # if SETUP_NEEDED:
+    #     db.run_setup_scripts()
 
-    for i in range(15):
-        run(db, i)
+    # # Get parameters from db table (requests)
+    # params_handler = ParamsHandler(db)
+    # params_handler.obtain_params_from_db()
 
-    # Check database working
-    # print(db.show_tables())
-    # print(db.select_all("jobs"))
-    # print(db.select_all("results"))
 
-    # Get parameters from db table (requests)
-    params_handler = ParamsHandler(db)
-    params_handler.obtain_params_from_db()
+    # for params in params_handler.params_list:
+    #     try:
+    #         run_one_job(db, params)
+    #     except:
+    #         print("error")
 
-    # print(params_handler.values_in_db)
-    # print(params_handler.params_list)
-    # print(params_handler.get_params_for_crawler())
-    idx = 0
-    # Download the data
-    crawler = SingleCrawlerWithDB(db, params_handler.params_list[idx])
-    crawler.crawl()
-    # print(crawler.log)
-    # print(crawler.results_pd_raw)
+    # Download the data from web
+    # crawler = SingleCrawlerWithDB(db, params_handler.params_list[idx])
+    # crawler.crawl()
 
-    # Sanitize dataframe (remove wrong values, ensure correct format etc.)
-    sanitizer = dfSanitizer(df=crawler.results_pd_raw)
-    sanitizer.sanitize_df(
-        params_handler.params_list[idx].variable_params, params_handler.params_list[idx].request_id)
+    # # Sanitize dataframe (remove wrong values, ensure correct format etc.)
+    # sanitizer = dfSanitizer(df=crawler.results_pd_raw)
+    # sanitizer.sanitize_df(
+    #     params_handler.params_list[idx].variable_params, params_handler.params_list[idx].request_id)
 
-    # Show sanitized df
-    print(sanitizer.sanitized_df)
+    # with pd.option_context('display.max_rows', None, 'display.max_columns', None):
+    #     # Do not truncate columns
+    #     print("sanitized_df")
+    #     print(sanitizer.sanitized_df)
 
-    # Commit crawling to the database table results
-    sanitizer.prepare_for_db()
-    df = sanitizer.df_to_db
+    # db_sanitizer = dbSanitizer(raw_df = sanitizer.sanitized_df, db = db)
+    # db_sanitizer.prepare_for_db()
 
-    df.to_sql(con=db.conn,
-              name="results",
-              if_exists="append",
-              index=False,
-              dtype={
-                  "request_id": "INT",
-                  "time_created": "DATETIME",
-                  "start_city": "INT",
-                  "end_city": "INT",
-                  "time": "INT",
-                  "date": "DATE",
-                  "price": "DOUBLE",
-                  "changes_number": "INT"
-              })
 
-    # db._insert_from_data_frame("results", df)
-    # db.select_all("results")
 
-    with pd.option_context('display.max_rows', None, 'display.max_columns', None):
-        # Do not truncate columns
-        print(sanitizer.sanitized_df)
+    # db_sanitizer.df_to_db.to_sql(con=db.conn,
+    #                           name="results2",
+    #                           if_exists="append",
+    #                           index=False)
+
+    # print(db_sanitizer.df_to_db)
