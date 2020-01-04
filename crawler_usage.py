@@ -20,7 +20,9 @@ class ParamsHandler:
         self.values_in_db = None
         self.request_id = None
 
-        self.parameters_from_db_query = '''SELECT 
+    def fetch_requests_from_db(self):
+
+        query_parameters = '''SELECT 
         t2.request_id,
         strftime("%d.%m.%Y",t2.date) as rideDate,
         t2.start_city as departureCity,
@@ -29,8 +31,7 @@ class ParamsHandler:
         left join requests as t2 ON t1.job_id = t2.job_id
         WHERE t1.active = 1'''
 
-    def obtain_params_from_db(self):
-        params_from_db = self.db.c.execute(self.parameters_from_db_query)
+        params_from_db = self.db.c.execute(query_parameters)
         self.params_names_from_db = [i[0] for i in params_from_db.description]
         self.values_in_db = params_from_db.fetchall()
 
@@ -82,15 +83,34 @@ class SingleCrawlerWithDB(Crawler):
         self.results_pd_raw = self.results_df
 
 
-
 class jobRunner:
-    def __init__(self, path_to_db = "test_db.db", reset_db = False):
+    def __init__(self, path_to_db="test_db.db", reset_db=False):
         self.path_to_db = path_to_db
         self.reset_db = reset_db
         self.correctly_setup = False
 
+    def run_all_jobs(self):
+
+        if not self.correctly_setup:
+            self._setup_before_running()
+
+        for params in self.params_handler.params_list:
+            self._run_one_job(params)
+
+    def run_job_from_request_id(self, request_id):
+        if not self.correctly_setup:
+            self._setup_before_running()
+
+        # Filter parameters list and get first parameters 
+        # set with correct request_id
+        params = next(params for params in
+                      self.params_handler.params_list if
+                      params.request_id == request_id)
+
+        self._run_one_job(params)
+
     def _setup_before_running(self):
-        
+
         if self.reset_db and os.path.exists(self.path_to_db):
             # Clear database completely if needed (remove file)
             os.remove(self.path_to_db)
@@ -101,34 +121,9 @@ class jobRunner:
             self.db.run_setup_scripts()
 
         self.params_handler = ParamsHandler(self.db)
-        self.params_handler.obtain_params_from_db()
+        self.params_handler.fetch_requests_from_db()
 
         self.correctly_setup = True
-        
-
-
-    def run_all_jobs(self):
-        if not self.correctly_setup:
-            self._setup_before_running()
-
-        for params in self.params_handler.params_list:
-            # try:
-            self._run_one_job(params)
-            # except:
-            #     print("error")
-
-    def run_job_from_request_id(self, request_id):
-        if not self.correctly_setup:
-            self._setup_before_running()
-
-        # Filter parameters list and get first parameters set with correct request_id
-        params = next(params for params in 
-            self.params_handler.params_list if 
-            params.request_id == request_id)
-
-
-
-        self._run_one_job(params)
 
     def _run_one_job(self, params):
         print(f"running job with params {params.request_id}")
@@ -141,25 +136,20 @@ class jobRunner:
         sanitizer.sanitize_df(
             params.variable_params, params.request_id)
 
-        db_sanitizer = dbSanitizer(raw_df = sanitizer.sanitized_df, db = self.db)
+        # Prepare for inserting into database - mainly to normalize stations names
+        db_sanitizer = dbSanitizer(raw_df=sanitizer.sanitized_df, db=self.db)
         db_sanitizer.prepare_for_db()
 
+        # Insert to database
         db_sanitizer.df_to_db.to_sql(con=self.db.conn,
-                                  name="results2",
-                                  if_exists="append",
-                                  index=False)
-
-
-
-
-
-
-
+                                     name="results2",
+                                     if_exists="append",
+                                     index=False)
 
 
 if __name__ == "__main__":
 
-    job_runner = jobRunner(reset_db = True)
+    job_runner = jobRunner(reset_db=False)
     # job_runner.run_job_from_request_id(4)
     job_runner.run_all_jobs()
 
@@ -174,8 +164,7 @@ if __name__ == "__main__":
 
     # # Get parameters from db table (requests)
     # params_handler = ParamsHandler(db)
-    # params_handler.obtain_params_from_db()
-
+    # params_handler.fetch_requests_from_db()
 
     # for params in params_handler.params_list:
     #     try:
@@ -199,8 +188,6 @@ if __name__ == "__main__":
 
     # db_sanitizer = dbSanitizer(raw_df = sanitizer.sanitized_df, db = db)
     # db_sanitizer.prepare_for_db()
-
-
 
     # db_sanitizer.df_to_db.to_sql(con=db.conn,
     #                           name="results2",

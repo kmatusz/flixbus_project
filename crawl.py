@@ -16,9 +16,9 @@ class Crawler():
         self._request = RequestSinglePage(params=self.params)
         self._request.get()
 
-        self.log["fetching"] = self._request.errors
+        self.log["fetching"] = self._request.log
 
-        if not self._request.correctly_get:
+        if not self._request.log.successful:
             self.results = None
             return None
 
@@ -30,3 +30,19 @@ class Crawler():
 
     def get_pandas_df(self):
         return self.results_df
+
+
+if __name__ == "__main__":
+    search_params = {
+        "departureCity": "7568",
+        "arrivalCity": "1915",
+        "rideDate": "20.06.2020",
+        "adult": "1",
+        "_locale": "pl"
+    }
+    crawler = Crawler(search_params)
+    crawler.get_all()
+    print(crawler._request._resp.url)
+
+    print(crawler.results)
+    print(crawler.log)

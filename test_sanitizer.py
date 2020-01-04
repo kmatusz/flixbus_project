@@ -38,9 +38,9 @@ import unittest
 
 
 a = dfSanitizer()
-sanitize_price = a.sanitize_price
-sanitize_time = a.sanitize_time
-sanitize_station = a.sanitize_station
+sanitize_price = a._sanitize_price
+sanitize_time = a._sanitize_time
+sanitize_station = a._sanitize_station
 
 print(sanitize_price("65,94") == 65.94)
 print(sanitize_price("65,a94") == 65.94)
@@ -66,7 +66,3 @@ print(sanitize_station("      abc") == "abc")
 print(sanitize_station("abc   ") == "abc")
 print(sanitize_station(1) is None)
 print(sanitize_station(None) is None)
-
-
-
-a.init_vectorised_funs()
