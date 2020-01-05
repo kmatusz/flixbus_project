@@ -1,6 +1,8 @@
 from bs4 import BeautifulSoup
 from datetime import datetime
 from collections import OrderedDict
+from log import Log
+import pickle
 
 
 def find_safely(x, *args, **kwargs):
@@ -32,35 +34,9 @@ class InitialParser():
     def __init__(self, page):
         self._raw_page = page
         self.exec_log = []
+        self.log = Log(context="InitialParser")
         self._stop_exec = False
         self._results_container = None
-
-    def _convert_to_bs(self):
-        try:
-            self._bs_page = BeautifulSoup(self._raw_page, "html.parser")
-        except:
-            self._bs_page = None
-            self._stop_exec = True
-
-    def _find_results_container(self):
-        results_container = find_safely(
-            self._bs_page, "div", id="results-group-container-direct")
-
-        if results_container is None:
-            self._stop_exec = True
-        else:
-            self._results_container = results_container
-
-    def _find_rows(self):
-
-        rows = find_all_safely(self._results_container,
-                               "div", class_="ride-available")
-
-        if rows is None:
-            self._stop_exec = True
-
-        else:
-            self.rows = rows
 
     def extract_rows(self):
 
@@ -79,8 +55,42 @@ class InitialParser():
             else:
                 self.exec_log.append((key, "correct"))
 
+    def _convert_to_bs(self):
+        # Function converts raw page obtained using requests to beautifulsoup
+        try:
+            self._bs_page = BeautifulSoup(self._raw_page, "html.parser")
+        except:
+            self._bs_page = None
+            self._stop_exec = True
+
+    def _find_results_container(self):
+        # Function finds css results container
+        # containing rows, each row is one ride
+        results_container = find_safely(
+            self._bs_page, "div", id="results-group-container-direct")
+
+        if results_container is None:
+            self._stop_exec = True
+        else:
+            self._results_container = results_container
+
+    def _find_rows(self):
+        # Function finds all rows in results container.
+        rows = find_all_safely(self._results_container,
+                               "div", class_="ride-available")
+
+        if rows is None:
+            self._stop_exec = True
+
+        else:
+            self.rows = rows
+
 
 class RowParser():
+    '''
+    Class for parsing single row of results (single ride)
+    '''
+
     def __init__(self, row):
         self._full_row = row
         self.extracted_content = {
@@ -92,94 +102,81 @@ class RowParser():
         }
         self.fields_with_errors = []
 
-    def _find_times(self):
+    def extract_fields(self):
+        self._find_stop_times()
+        self._find_stations()
+        self._find_price()
 
-        ride_times = find_all_safely(
+    def _find_stop_times(self):
+
+        stop_times = find_all_safely(
             self._full_row, "div", class_="flix-connection__time")
 
-        if ride_times is None:
+        if stop_times is not None:
+            self._process_stop_time(stop_times[0], "departure_time")
+            self._process_stop_time(stop_times[1], "arrival_time")
+        else:
             self.fields_with_errors.append(["departure_time", "arrival_time"])
 
+    def _process_stop_time(self, stop_time, time_type):
+        if stop_time is not None:
+            self.extracted_content[time_type] = stop_time.text.rstrip(
+            ).lstrip()
         else:
-            departure_time = ride_times[0]
-            arrival_time = ride_times[1]
-
-            if departure_time is None:
-                self.fields_with_errors.append("departure_time")
-            else:
-                self.extracted_content["departure_time"] = departure_time.text.rstrip(
-                ).lstrip()
-
-            if arrival_time is None:
-                self.fields_with_errors.append("arrival_time")
-            else:
-                self.extracted_content["arrival_time"] = arrival_time.text.rstrip(
-                ).lstrip()
+            self.fields_with_errors.append(time_type)
 
     def _find_stations(self):
 
         ride_stations = find_all_safely(
             self._full_row, "div", class_="station-name-label")
 
-        if ride_stations is None:
+        if ride_stations is not None:
+
+            self._process_station(ride_stations[0], "departure_station")
+            self._process_station(ride_stations[1], "arrival_station")
+
+        else:
             self.fields_with_errors.append(
                 ["departure_station", "arrival_station"])
 
+    def _process_station(self, station, station_type):
+        if station is not None:
+            self.extracted_content[station_type] = station.text
         else:
-            departure_station = ride_stations[0]
-            if departure_station is None:
-                self.fields_with_errors.append("departure_station")
-            else:
-                self.extracted_content["departure_station"] = departure_station.text
-
-            arrival_station = ride_stations[1]
-
-            if arrival_station is None:
-                self.fields_with_errors.append("arrival_station")
-            else:
-                self.extracted_content["arrival_station"] = arrival_station.text
+            self.fields_with_errors.append(station_type)
 
     def _find_price(self):
         price = find_safely(self._full_row, "span",
                             class_="num currency-small-cents")
 
-        if price is None:
-            self.fields_with_errors.append("price")
+        if price is not None:
+            self.extracted_content["price"] = self._process_price(price.text)
         else:
-            self.extracted_content["price"] = self._sanitize_price(price.text)
+            self.fields_with_errors.append("price")
 
-    def _sanitize_price(self, price_text):
-        # Funkcja do doprowadzenia ceny do sensownego rezultatu
+    def _process_price(self, price_text):
 
         return price_text.split("\xa0zł")[0].rstrip().lstrip()
-
-    def extract_fields(self):
-        funs_list = [
-            self._find_times,
-            self._find_stations,
-            self._find_price
-        ]
-
-        for fun in funs_list:
-            fun()
 
 
 class Parser:
     def __init__(self, page):
         self._raw_page = page
         self._log = {}
+        self.log = Log(context="Parser")
 
     def extract_fields(self):
-        parser = InitialParser(self._raw_page)
-        parser.extract_rows()
+        self.log.start()
+        initial_parser = InitialParser(self._raw_page)
+        initial_parser.extract_rows()
 
-        self._log["initial"] = parser.exec_log
+        self._log["initial"] = initial_parser.exec_log
 
-        rows = parser.rows
+        rows = initial_parser.rows
 
         if rows is None:
             self._log["test_rows"] = ("There are no rows")
-            self.results = []
+            self.results = None
             return None
 
         self._log["test_rows"] = ("Rows number", len(rows))
@@ -189,7 +186,6 @@ class Parser:
         for idx, row in enumerate(rows):
 
             single_row = RowParser(row)
-
             single_row.extract_fields()
 
             self.results.append(single_row.extracted_content)
@@ -197,3 +193,13 @@ class Parser:
             if len(single_row.fields_with_errors) > 0:
                 self._log["rows_parsing_errors"].append(
                     ("Row {0}".format(idx), single_row.fields_with_errors))
+
+
+if __name__ == "__main__":
+    with open("tests/page.pkl", 'rb') as file:
+        page_content = pickle.load(file)
+
+    parser = Parser(page_content)
+    parser.extract_fields()
+    print(parser.results)
+    print(parser.log)
