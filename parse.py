@@ -64,7 +64,7 @@ class InitialParser():
             self._stop_exec = True
 
     def _find_results_container(self):
-        # Function finds css results container 
+        # Function finds css results container
         # containing rows, each row is one ride
         results_container = find_safely(
             self._bs_page, "div", id="results-group-container-direct")
@@ -109,18 +109,18 @@ class RowParser():
 
     def _find_stop_times(self):
 
-        ride_times = find_all_safely(
+        stop_times = find_all_safely(
             self._full_row, "div", class_="flix-connection__time")
 
-        if ride_times is not None:
-            self._process_stop_time(ride_times[0], "departure_time")
-            self._process_stop_time(ride_times[1], "arrival_time")
+        if stop_times is not None:
+            self._process_stop_time(stop_times[0], "departure_time")
+            self._process_stop_time(stop_times[1], "arrival_time")
         else:
             self.fields_with_errors.append(["departure_time", "arrival_time"])
 
-    def _process_stop_time(self, ride_time, time_type):
-        if ride_time is not None:
-            self.extracted_content[time_type] = ride_time.text.rstrip(
+    def _process_stop_time(self, stop_time, time_type):
+        if stop_time is not None:
+            self.extracted_content[time_type] = stop_time.text.rstrip(
             ).lstrip()
         else:
             self.fields_with_errors.append(time_type)

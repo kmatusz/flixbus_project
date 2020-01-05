@@ -2,6 +2,8 @@
 import sqlite3
 import time
 import datetime
+from setup_db import DB
+import os
 
 #connect to test_db.db database
 #more important while running those functions
@@ -45,13 +47,26 @@ def getUserJobsNames(loginName):
 def getResultForJobId(jobId):
     conn = sqlite3.connect('test_db.db')
     c = conn.cursor()
-    c.execute("""SELECT dep.city_name, arr.city_name,  r.date, res.time, res.price, 
-                    round(res.price/dis.distance,4), datetime(res.time_created, 'unixepoch', 'localtime')
+
+    query = ''' 
+    SELECT 
+        dep.city_name as departure_city, 
+        arr.city_name as arrival_city,  
+        strftime("%d.%m.%Y", res.departure_datetime) as departure_date,
+        strftime("%H:%M", res.departure_datetime) as departure_time,
+        strftime("%d.%m.%Y", res.arrival_datetime) as arrival_time,
+        res.price as price,
+        round(res.price/dis.distance,4) as price_per_km,
+        res.fully_booked as fully_booked, 
+        strftime("%d.%m.%Y (%H:%M)", res.time_created) as date_obtained
                 FROM requests r
-                JOIN results res ON r.request_id = res.request_id AND r.job_id = '"""+str(jobId)+"""'
+                JOIN results res ON r.request_id = res.request_id AND r.job_id = ?
                 JOIN cities arr ON r.start_city = arr.city_id
                 JOIN cities dep ON r.end_city = dep.city_id
-                JOIN distances dis ON arr.city_id = dis.end_city AND dep.city_id = dis.start_city """)
+                JOIN distances dis ON arr.city_id = dis.end_city AND dep.city_id = dis.start_city 
+    '''
+
+    c.execute(query, (jobId,))
     listOfResults=c.fetchall()
     conn.close()    
     return listOfResults
@@ -129,11 +144,15 @@ def requestFromJob(jobName, startCity, endCity, startDate, endDate):
     return True
 
 
+def setup_before_running(path_to_db = "test_db.db"):
 
+    if os.path.exists(path_to_db):
+        # Clear database completely if needed (remove file)
+        os.remove(path_to_db)
 
+    db = DB(path_to_db)
 
-    
-
+    db.run_setup_scripts()
 
 # Save (commit) the changes
 #conn.commit()

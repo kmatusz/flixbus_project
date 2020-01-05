@@ -11,7 +11,12 @@ import scraper_itegrate as scr
 
 secretKey = "SDMDSIUDSFYODS&TTFS987f9ds7f8sd6DFOUFYWE&FY"
 sessions = {} #stores data about current sessions - key is sessionID, value is username
+# Indicates whether during app startup 
+# previous database should be reloaded from startup scripts
+SETUP_DB_FROM_SCRIPT = True 
 
+if SETUP_DB_FROM_SCRIPT:
+    dbm.setup_before_running()
 
 @route('/login')
 def login():

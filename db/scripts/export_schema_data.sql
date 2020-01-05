@@ -675,35 +675,6 @@ INSERT INTO requests (
 
 -- Table: results
 CREATE TABLE results (
-    result_id      INTEGER  PRIMARY KEY AUTOINCREMENT,
-    request_id     INT                  NOT NULL,
-    time_created   DATETIME             NOT NULL,
-    start_city     INT,
-    end_city       INT,
-    time           INT,
-    date           DATE,
-    price          DOUBLE,
-    changes_number INT,
-    -- PRIMARY KEY (
-    --     result_id
-    -- ),
-    FOREIGN KEY (
-        request_id
-    )
-    REFERENCES requests (request_id),
-    FOREIGN KEY (
-        start_city
-    )
-    REFERENCES cities (city_id),
-    FOREIGN KEY (
-        end_city
-    )
-    REFERENCES cities (city_id)
-);
-
-
--- Table: results2
-CREATE TABLE results2 (
     result_id          INTEGER  PRIMARY KEY AUTOINCREMENT,
     request_id         INT                  NOT NULL,
     time_created       DATETIME             NOT NULL,

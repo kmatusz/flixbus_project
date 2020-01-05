@@ -88,6 +88,10 @@ class jobRunner:
         self.path_to_db = path_to_db
         self.reset_db = reset_db
         self.correctly_setup = False
+        if not reset_db:
+            self.db = DB(self.path_to_db)
+        else:
+            self.db = None
 
     def run_all_jobs(self):
 
@@ -95,9 +99,9 @@ class jobRunner:
             self._setup_before_running()
 
         for params in self.params_handler.params_list:
-            self._run_one_job(params)
+            self._run_one_request(params)
 
-    def run_job_from_request_id(self, request_id):
+    def run_request_from_request_id(self, request_id):
         if not self.correctly_setup:
             self._setup_before_running()
 
@@ -107,7 +111,27 @@ class jobRunner:
                       self.params_handler.params_list if
                       params.request_id == request_id)
 
-        self._run_one_job(params)
+        self._run_one_request(params)
+
+    def run_job_from_job_id(self, job_id):
+        if not self.correctly_setup:
+            self._setup_before_running()
+
+        request_ids = self._get_request_ids_for_job(job_id)
+
+        for request_id in request_ids:
+            self.run_request_from_request_id(request_id)
+
+    def _get_request_ids_for_job(self, job_id):
+        self.db.c.execute('''SELECT 
+            request_id 
+            FROM requests 
+            WHERE job_id = ?''', (1,))
+
+        return [i[0] for i in self.db.c.fetchall()]
+
+
+
 
     def _setup_before_running(self):
 
@@ -125,8 +149,8 @@ class jobRunner:
 
         self.correctly_setup = True
 
-    def _run_one_job(self, params):
-        print(f"running job with params {params.request_id}")
+    def _run_one_request(self, params):
+        print(f"running request with params {params.request_id}")
         # Download the data from web
         crawler = SingleCrawlerWithDB(self.db, params)
         crawler.crawl()
@@ -142,14 +166,14 @@ class jobRunner:
 
         # Insert to database
         db_sanitizer.df_to_db.to_sql(con=self.db.conn,
-                                     name="results2",
+                                     name="results",
                                      if_exists="append",
                                      index=False)
 
 
 if __name__ == "__main__":
 
-    job_runner = jobRunner(reset_db=False)
+    job_runner = jobRunner(reset_db=True)
     # job_runner.run_job_from_request_id(4)
     job_runner.run_all_jobs()
 
@@ -190,7 +214,7 @@ if __name__ == "__main__":
     # db_sanitizer.prepare_for_db()
 
     # db_sanitizer.df_to_db.to_sql(con=db.conn,
-    #                           name="results2",
+    #                           name="results",
     #                           if_exists="append",
     #                           index=False)
 
