@@ -25,14 +25,14 @@
 
 	<form action="" method="post">
         <div class="form-group">
-            <label for="exampleFormControlSelect1">Select  table to show</label>
+            <label for="exampleFormControlSelect1">Select  information to show</label>
             <select class="form-control" id="exampleFormControlSelect1" name="admin_table_choosing">
             %for i in tables_list:
                 <option value={{i}}>{{i}}</option>
             %end
             </select>
         </div>
-        <button type="submit" class="btn btn-primary mb-2">Show selected table</button>
+        <button type="submit" class="btn btn-primary mb-2">Show selected information</button>
     </form>
 
 
