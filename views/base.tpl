@@ -27,7 +27,7 @@
           </div>
 
           <div class="collapse navbar-collapse" id="navbarNav">
-            % if isLoggedIn and not isAdmin:
+            % if isLoggedIn:
               <ul class="navbar-nav">
                 <li class="nav-item">
                   <a class="nav-link" href="/newjob">Define New Job <span class="sr-only">(current)</span></a>
@@ -44,17 +44,8 @@
              <div class="collapse navbar-collapse" id="navbarNav">
               <ul class="navbar-nav">
                 <li class="nav-item">
-                  <a class="nav-link" href="#">Scraper management <span class="sr-only">(current)</span></a>
+                  <a class="nav-link" href="/adminpanel">Scraper management <span class="sr-only">(current)</span></a>
                 </li>
-                <!-- <li class="nav-item">
-                  <a class="nav-link" href="#">Last Results</a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="#">Last Reqests</a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="#">Execution Logs</a>
-                </li> -->
               </ul>
              % end
              % if isLoggedIn or isAdmin:

@@ -110,15 +110,14 @@ def index():
     if checkIfAdmin(loginName):
         redirect('/adminpanel')
     
-    return template('index', message='', loginName=loginName, isLoggedIn=True, isAdmin=False)
+    return template('index', message='', loginName=loginName, isLoggedIn=True, isAdmin=checkIfAdmin(loginName))
 
 
 @route('/newjob')
 def newJob():
     #authentication check
     loginName = checkAuth()
-    if checkIfAdmin(loginName):
-        redirect('/adminpanel')
+
 
     #change this to -> all cities
     citiesList=dbm.getCityNames()
@@ -127,15 +126,14 @@ def newJob():
     #if new job run correctly -> message success
     #if date wrong -> message date
 
-    return template('newjob', message=mes, cityList=citiesList, isLoggedIn=True, isAdmin=False)
+    return template('newjob', message=mes, cityList=citiesList, isLoggedIn=True, isAdmin=checkIfAdmin(loginName))
     #formularz dla wyboru nowego joba
 
 @route('/newjob', method='POST')
 def newJobP():
     #authentication check
     loginName = checkAuth()
-    if checkIfAdmin(loginName):
-        redirect('/adminpanel')
+
 
     #change this to -> all cities
     citiesList=dbm.getCityNames()
@@ -152,19 +150,19 @@ def newJobP():
 
     if(jobName==''):
         mes = "Job name cannot be empty!"
-        return template('newjob', message=mes, cityList=citiesList, isLoggedIn=True, isAdmin=False)
+        return template('newjob', message=mes, cityList=citiesList, isLoggedIn=True, isAdmin=checkIfAdmin(loginName))
 
     if(depCity=='' or arrCity==''):
         mes = "Cities of arrival and departure need to be set."
-        return template('newjob', message=mes, cityList=citiesList, isLoggedIn=True, isAdmin=False)
+        return template('newjob', message=mes, cityList=citiesList, isLoggedIn=True, isAdmin=checkIfAdmin(loginName))
 
     if(depCity==arrCity):
         mes = "Cities of arrival and departure must differ."
-        return template('newjob', message=mes, cityList=citiesList, isLoggedIn=True, isAdmin=False)
+        return template('newjob', message=mes, cityList=citiesList, isLoggedIn=True, isAdmin=checkIfAdmin(loginName))
 
     if( (dateFromStr=='') or (dateToStr=='')):
         mes = "The date interval needs to be specified."
-        return template('newjob', message=mes, cityList=citiesList, isLoggedIn=True, isAdmin=False)
+        return template('newjob', message=mes, cityList=citiesList, isLoggedIn=True, isAdmin=checkIfAdmin(loginName))
 
     #date as a str - need to convert
     dateFrom = datetime.datetime.strptime(dateFromStr, '%Y-%m-%d').date()
@@ -172,11 +170,11 @@ def newJobP():
 
     if(dateFrom<=curTime.date()):
         mes="You can only define a new search job for future dates! Remember about setting the right date interval."
-        return template('newjob', message=mes, cityList=citiesList, isLoggedIn=True, isAdmin=False)
+        return template('newjob', message=mes, cityList=citiesList, isLoggedIn=True, isAdmin=checkIfAdmin(loginName))
 
     if(dateFrom>dateTo):
         mes="Set valid departure date interval!"
-        return template('newjob', message=mes, cityList=citiesList, isLoggedIn=True, isAdmin=False)
+        return template('newjob', message=mes, cityList=citiesList, isLoggedIn=True, isAdmin=checkIfAdmin(loginName))
         
     #validation done
 
@@ -191,7 +189,7 @@ def newJobP():
     #run scrapper
     scr.runJob(jobForScrapper)
 
-    return template('newjob', message="ok", cityList=citiesList, isLoggedIn=True, isAdmin=False)
+    return template('newjob', message="ok", cityList=citiesList, isLoggedIn=True, isAdmin=checkIfAdmin(loginName))
 
 
 #standard version of a yourjobs page -> generating the basic view 
@@ -200,11 +198,10 @@ def newJobP():
 def yourJobs():
     #authentication check
     loginName = checkAuth()
-    if checkIfAdmin(loginName):
-        redirect('/adminpanel')
+
     userJobList=dbm.getUserJobs(loginName)
 
-    return template('yourjobs', table=userJobList, isLoggedIn=True, isAdmin=False)
+    return template('yourjobs', table=userJobList, isLoggedIn=True, isAdmin=checkIfAdmin(loginName))
 
 #this page allows for retrieving the user's action on a webpage
 #pressing the button activates the function connected to scrapper
@@ -212,8 +209,7 @@ def yourJobs():
 def yourJobsP():
     #authentication check
     loginName = checkAuth()
-    if checkIfAdmin(loginName):
-        redirect('/adminpanel')
+
     userJobList=dbm.getUserJobs(loginName)
     
     #get the indexes of jobs chosen by a user
@@ -230,27 +226,25 @@ def yourJobsP():
         for i in tempList:
             scr.runJob(i)
 
-    return template('yourjobs', table=userJobList, isLoggedIn=True, isAdmin=False)
+    return template('yourjobs', table=userJobList, isLoggedIn=True, isAdmin=checkIfAdmin(loginName))
 
 #first version of JobResults - user can choose a Job for which results will be showed
 @route('/jobresults')
 def jobResults():
     #authentication check
     loginName = checkAuth()
-    if checkIfAdmin(loginName):
-        redirect('/adminpanel')
+
 
     formList=dbm.getUserJobsNames(loginName)
 
-    return template('jobresults', formularList=formList , showTable=False, isLoggedIn=True, isAdmin=False)
+    return template('jobresults', formularList=formList , showTable=False, isLoggedIn=True, isAdmin=checkIfAdmin(loginName))
 
 #this allows for generating the result table for chosen Job (form submitted)
 @route('/jobresults', method='POST')
 def jobResultsP():
     #authentication check
     loginName = checkAuth()
-    if checkIfAdmin(loginName):
-        redirect('/adminpanel')
+
 
     formList=dbm.getUserJobsNames(loginName)
 
@@ -265,7 +259,7 @@ def jobResultsP():
     #tutorial: https://xlsxwriter.readthedocs.io/tutorial03.html
 
     return template('jobresults', formularList=formList, showTable=showTable, 
-            resultTable=resultsForJob, loginName=loginName, isLoggedIn=True, isAdmin=False)
+            resultTable=resultsForJob, loginName=loginName, isLoggedIn=True, isAdmin=checkIfAdmin(loginName))
 
 
 #filepath='result.xlsx' #needs to be changes and passed to function
@@ -273,8 +267,7 @@ def jobResultsP():
 def download():
     #only for logged in users
     loginName = checkAuth()
-    if checkIfAdmin(loginName):
-        redirect('/adminpanel')
+
 
     #path relative to working directory
     return static_file(filename='result.xlsx', root='./resultFile', download=True)
@@ -346,7 +339,7 @@ def adminpanelP():
         isAdmin=True)
 
     # return template('jobresults', formularList=formList, showTable=showTable,
-    #                 resultTable=resultsForJob, loginName=loginName, isLoggedIn=True, isAdmin=False)
+    #                 resultTable=resultsForJob, loginName=loginName, isLoggedIn=True, isAdmin=checkIfAdmin(loginName))
 
 
 

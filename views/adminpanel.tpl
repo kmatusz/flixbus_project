@@ -49,14 +49,6 @@
                 	%for col in selected_table_header:
                 		<th scope="col">{{col}}</th>
                 	%end
-                <!-- <th scope="col">Arrival city</th>
-                <th scope="col">Departure date</th>
-                <th scope="col">Departure time</th>
-                <th scope="col">Arrival time</th>
-                <th scope="col">Price</th>
-                <th scope="col">Price per km</th>
-                <th scope="col">Fully booked</th>
-                <th scope="col">Date obtained</th> -->
                 </tr>
             </thead>
             <tbody>
