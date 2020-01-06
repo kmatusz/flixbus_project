@@ -21,5 +21,58 @@
 		<h3 class="text-center text-white pt-5">   </h3>
 		</div>
 	</div>
+
+
+	<form action="" method="post">
+        <div class="form-group">
+            <label for="exampleFormControlSelect1">Select  table to show</label>
+            <select class="form-control" id="exampleFormControlSelect1" name="admin_table_choosing">
+            %for i in tables_list:
+                <option value={{i}}>{{i}}</option>
+            %end
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary mb-2">Show selected table</button>
+    </form>
+
+
+    %if showTable:
+	<div class="row">
+		<div class="mt-2 col-md-12">
+		<h3>Table content</h3>
+		</div>
+	</div>
+
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                	%for col in selected_table_header:
+                		<th scope="col">{{col}}</th>
+                	%end
+                <!-- <th scope="col">Arrival city</th>
+                <th scope="col">Departure date</th>
+                <th scope="col">Departure time</th>
+                <th scope="col">Arrival time</th>
+                <th scope="col">Price</th>
+                <th scope="col">Price per km</th>
+                <th scope="col">Fully booked</th>
+                <th scope="col">Date obtained</th> -->
+                </tr>
+            </thead>
+            <tbody>
+                %for row in selected_table_content:
+                <tr>
+                     %for col in row:
+                        <td>{{col}}</td>
+                     %end
+                </tr>
+                %end
+                <tr>
+            </tbody>
+        </table>
+        
+    %end
+
+
 </body>
 </html>

@@ -18,6 +18,20 @@ def selectAllUsers(conn):
     conn.close()
     return listOfResults
 
+def getFullTable(tableName):
+    conn = sqlite3.connect('test_db.db')
+    c = conn.cursor()
+    print(f'''SELECT *
+                    FROM {tableName}
+                    ''')
+    c.execute(f'''SELECT *
+                    FROM {tableName}
+                    ''')
+    selected_table_header = [description[0] for description in c.description]
+    selected_table_content=c.fetchall()
+    conn.close()
+    return selected_table_header, selected_table_content
+
 
 #function for generating drop down list in template with user's jobs
 def getUserJobs(loginName):

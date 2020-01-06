@@ -14,7 +14,7 @@ secretKey = "SDMDSIUDSFYODS&TTFS987f9ds7f8sd6DFOUFYWE&FY"
 sessions = {} #stores data about current sessions - key is sessionID, value is username
 # Indicates whether during app startup 
 # previous database should be reloaded from startup scripts
-SETUP_DB_FROM_SCRIPT = True 
+SETUP_DB_FROM_SCRIPT = False 
 
 if SETUP_DB_FROM_SCRIPT:
     dbm.setup_before_running()
@@ -281,14 +281,73 @@ def download():
 
 
 #landing page for the admin
+# @route('/adminpanel')
+# def admin():
+#     loginName = checkAuth()
+#     if checkIfAdmin(loginName)==False:
+#         redirect('/login')
+#     #isLoggedIn = False, because it's a variable controling for standard users 
+#     #this is used in a html generation via template (navbar conditioning)
+#     return template('adminpanel', loginName=loginName, isLoggedIn=False, isAdmin=True)
+
 @route('/adminpanel')
-def admin():
+def adminpanel():
+    # authentication check
     loginName = checkAuth()
-    if checkIfAdmin(loginName)==False:
+    if not checkIfAdmin(loginName):
         redirect('/login')
-    #isLoggedIn = False, because it's a variable controling for standard users 
-    #this is used in a html generation via template (navbar conditioning)
-    return template('adminpanel', loginName=loginName, isLoggedIn=False, isAdmin=True)
+
+    tables_list = [
+    "execution_logs",
+    "inserts_logs",
+    "jobs",
+    "requests",
+    "users"]
+
+    return template('adminpanel', 
+        loginName = loginName,
+        tables_list=tables_list, 
+        showTable=False, 
+        isLoggedIn=True, 
+        isAdmin=True)
+
+
+@route('/adminpanel', method='POST')
+def adminpanelP():
+    # authentication check
+    loginName = checkAuth()
+    if not checkIfAdmin(loginName):
+        redirect('/login')
+
+    tables_list = [
+    "execution_logs",
+    "inserts_logs",
+    "jobs",
+    "requests",
+    "users"]
+
+    selected_table = request.POST.getall('admin_table_choosing')
+    # if a job is selected: shows the table with results
+    if(selected_table):
+        showTable = True
+        # selected_table = dbm.getResultForJobId(selectedJob[0])
+        selected_table_header, selected_table_content = dbm.getFullTable(selected_table[0])
+        # dbm.prepareExcel(resultsForJob)
+
+    # HERE should be also Excel File generated and ready for download
+    # tutorial: https://xlsxwriter.readthedocs.io/tutorial03.html
+    return template('adminpanel', 
+        tables_list=tables_list, 
+        selected_table_header = selected_table_header,
+        selected_table_content = selected_table_content,
+        showTable=True, 
+        loginName=loginName,
+        isLoggedIn=True, 
+        isAdmin=True)
+
+    # return template('jobresults', formularList=formList, showTable=showTable,
+    #                 resultTable=resultsForJob, loginName=loginName, isLoggedIn=True, isAdmin=False)
+
 
 
 #all the other admin views
