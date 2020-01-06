@@ -113,6 +113,7 @@ class jobRunner:
             self._setup_before_running()
 
         request_ids = self._get_request_ids_for_job(job_id)
+        print(request_ids)
 
         for request_id in request_ids:
             self.run_request_from_request_id(request_id)
@@ -121,7 +122,7 @@ class jobRunner:
         self.db.c.execute('''SELECT 
             request_id 
             FROM requests 
-            WHERE job_id = ?''', (1,))
+            WHERE job_id = ?''', (job_id,))
 
         return [i[0] for i in self.db.c.fetchall()]
 
@@ -151,6 +152,21 @@ class jobRunner:
         crawler.crawl()
 
         # Sanitize dataframe (remove wrong values, ensure correct format etc.)
+        if crawler.results_pd_raw.empty:
+            print("empty df")
+            log = pd.DataFrame({
+                "request_id": [params.request_id], 
+                "successful": [0],
+                "time": [np.nan], 
+                "details": ["error"]})
+            log.to_sql(con=self.db.conn,
+                                         name="execution_logs",
+                                         if_exists="append",
+                                         index=False)
+
+            return None
+
+
         sanitizer = dfSanitizer(df=crawler.results_pd_raw)
         sanitizer.sanitize_df(
             params.variable_params, params.request_id)
@@ -178,11 +194,14 @@ class jobRunner:
                                      index=False)
 
 
+
+
 if __name__ == "__main__":
 
-    job_runner = jobRunner(reset_db=True)
+    job_runner = jobRunner(reset_db=False)
     # job_runner.run_job_from_request_id(4)
     job_runner.run_all_jobs()
+    # job_runner.run_job_from_job_id(9)
     # job_runner.run_request_from_request_id()
 
     # if SETUP_NEEDED and os.path.exists(path_to_db):
