@@ -230,6 +230,17 @@ INSERT INTO jobs (
                      'Trip between Gdansk and Lodz'
                  );
 
+-- View - parameters
+CREATE VIEW active_requests AS 
+    SELECT 
+        t2.request_id,
+        strftime("%d.%m.%Y",t2.date) as rideDate,
+        t2.start_city as departureCity,
+        t2.end_city as arrivalCity
+        FROM jobs as t1
+        left join requests as t2 ON t1.job_id = t2.job_id
+        WHERE t1.active = 1
+        ;
 
 -- Table: requests
 CREATE TABLE requests (

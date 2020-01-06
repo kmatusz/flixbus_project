@@ -22,14 +22,9 @@ class ParamsHandler:
 
     def fetch_requests_from_db(self):
 
-        query_parameters = '''SELECT 
-        t2.request_id,
-        strftime("%d.%m.%Y",t2.date) as rideDate,
-        t2.start_city as departureCity,
-        t2.end_city as arrivalCity
-        FROM jobs as t1
-        left join requests as t2 ON t1.job_id = t2.job_id
-        WHERE t1.active = 1'''
+        query_parameters = '''
+        SELECT * FROM active_requests
+        '''
 
         params_from_db = self.db.c.execute(query_parameters)
         self.params_names_from_db = [i[0] for i in params_from_db.description]
