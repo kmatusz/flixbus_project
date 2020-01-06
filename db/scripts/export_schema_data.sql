@@ -102,7 +102,7 @@ INSERT INTO distances (
 
 -- Table: execution_logs
 CREATE TABLE execution_logs (
-    id         INT            PRIMARY KEY,
+    id         INTEGER            PRIMARY KEY AUTOINCREMENT,
     request_id INT,
     successful TINYINT,
     time       DATETIME,
@@ -113,6 +113,13 @@ CREATE TABLE execution_logs (
     REFERENCES requests (request_id) 
 );
 
+-- Table: inserts_logs
+CREATE TABLE inserts_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    type VARCHAR(30),
+    inserted_id INT,
+    time_added DATETIME
+);
 
 -- Table: jobs
 CREATE TABLE jobs (
@@ -127,6 +134,23 @@ CREATE TABLE jobs (
     )
     REFERENCES users (user_id) 
 );
+
+CREATE TRIGGER log_new_job 
+    AFTER INSERT ON jobs
+BEGIN
+    INSERT INTO inserts_logs (
+        type,
+        inserted_id,
+        time_added
+        )
+    VALUES
+    (
+        "job",
+        new.job_id,
+        datetime('now')
+        )
+    ;
+END;
 
 INSERT INTO jobs (
                      job_id,
@@ -242,6 +266,10 @@ CREATE VIEW active_requests AS
         WHERE t1.active = 1
         ;
 
+
+
+
+
 -- Table: requests
 CREATE TABLE requests (
     request_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -262,6 +290,27 @@ CREATE TABLE requests (
     )
     REFERENCES cities (city_id) 
 );
+
+
+
+CREATE TRIGGER log_new_request 
+    AFTER INSERT ON requests
+BEGIN
+    INSERT INTO inserts_logs (
+        type,
+        inserted_id,
+        time_added
+        ) 
+    VALUES
+    (
+        "request",
+        new.request_id,
+        datetime('now')
+        )
+    ;
+END;
+
+
 
 INSERT INTO requests (
                          request_id,
@@ -714,6 +763,22 @@ CREATE TABLE results (
     )
     REFERENCES cities (city_id)
 );
+
+
+CREATE TRIGGER set_job_last_run_time
+        INSERT
+            ON results
+BEGIN
+    UPDATE jobs
+       SET last_run = datetime("now") 
+     WHERE jobs.job_id = (
+                             SELECT t1.job_id AS job_id
+                               FROM jobs t1
+                                    LEFT JOIN
+                                    requests t2 ON t1.job_id = t2.job_id
+                              WHERE t2.request_id = new.request_id
+                         );
+END;
 
 
 -- Table: stations

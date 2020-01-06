@@ -166,11 +166,24 @@ class jobRunner:
                                      index=False)
 
 
+        # Insert log to database
+        log = pd.DataFrame({
+            "request_id": db_sanitizer.df_to_db.head(1).request_id, 
+            "successful": 1,
+            "time": db_sanitizer.df_to_db.head(1).time_created, 
+            "details": np.nan})
+        log.to_sql(con=self.db.conn,
+                                     name="execution_logs",
+                                     if_exists="append",
+                                     index=False)
+
+
 if __name__ == "__main__":
 
     job_runner = jobRunner(reset_db=True)
     # job_runner.run_job_from_request_id(4)
     job_runner.run_all_jobs()
+    # job_runner.run_request_from_request_id()
 
     # if SETUP_NEEDED and os.path.exists(path_to_db):
     #     # Clear database completely if needed (remove file)
