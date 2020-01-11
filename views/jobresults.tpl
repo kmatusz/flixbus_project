@@ -15,7 +15,7 @@
 	<div class="row">
 		<div class="mt-2 col-md-12">
         <h3 class="text-center text-white pt-5">   </h3>
-		<h3>Here you can define the attributes of your new search</h3>
+		<h3>Here you can see results for a selected job and export them in an Excel file</h3>
         <h3 class="text-center text-white pt-5">   </h3>
 		</div>
 	</div>
