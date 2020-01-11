@@ -117,7 +117,8 @@ def index():
 def newJob():
     #authentication check
     loginName = checkAuth()
-
+    if checkIfAdmin(loginName):
+        redirect('/adminpanel')
 
     #change this to -> all cities
     citiesList=dbm.getCityNames()
@@ -133,7 +134,8 @@ def newJob():
 def newJobP():
     #authentication check
     loginName = checkAuth()
-
+    if checkIfAdmin(loginName):
+        redirect('/adminpanel')
 
     #change this to -> all cities
     citiesList=dbm.getCityNames()
@@ -198,6 +200,8 @@ def newJobP():
 def yourJobs():
     #authentication check
     loginName = checkAuth()
+    if checkIfAdmin(loginName):
+        redirect('/adminpanel')
 
     userJobList=dbm.getUserJobs(loginName)
 
@@ -209,6 +213,8 @@ def yourJobs():
 def yourJobsP():
     #authentication check
     loginName = checkAuth()
+    if checkIfAdmin(loginName):
+        redirect('/adminpanel')
 
     userJobList=dbm.getUserJobs(loginName)
     
@@ -233,7 +239,8 @@ def yourJobsP():
 def jobResults():
     #authentication check
     loginName = checkAuth()
-
+    if checkIfAdmin(loginName):
+        redirect('/adminpanel')
 
     formList=dbm.getUserJobsNames(loginName)
 
@@ -244,7 +251,8 @@ def jobResults():
 def jobResultsP():
     #authentication check
     loginName = checkAuth()
-
+    if checkIfAdmin(loginName):
+        redirect('/adminpanel')
 
     formList=dbm.getUserJobsNames(loginName)
 
@@ -255,9 +263,6 @@ def jobResultsP():
         resultsForJob = dbm.getResultForJobId(selectedJob[0])
         dbm.prepareExcel(resultsForJob)
 
-    #HERE should be also Excel File generated and ready for download
-    #tutorial: https://xlsxwriter.readthedocs.io/tutorial03.html
-
     return template('jobresults', formularList=formList, showTable=showTable, 
             resultTable=resultsForJob, loginName=loginName, isLoggedIn=True, isAdmin=checkIfAdmin(loginName))
 
@@ -267,7 +272,8 @@ def jobResultsP():
 def download():
     #only for logged in users
     loginName = checkAuth()
-
+    if checkIfAdmin(loginName):
+        redirect('/adminpanel')
 
     #path relative to working directory
     return static_file(filename='result.xlsx', root='./resultFile', download=True)
