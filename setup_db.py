@@ -10,7 +10,7 @@ class DB:
         self.conn = sqlite3.connect(self.db_path)
         self.c = self.conn.cursor()
         path = "db/scripts/"
-        self.setup_scripts_paths = ["export_schema_data.sql"]
+        self.setup_scripts_paths = ["export_schema_data_more_jobs.sql"]
         self.setup_scripts_paths = [path + i for i in self.setup_scripts_paths]
 
     def close(self):

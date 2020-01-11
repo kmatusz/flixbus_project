@@ -76,9 +76,9 @@ def getResultForJobId(jobId):
         strftime("%d.%m.%Y (%H:%M)", res.time_created) as date_obtained
                 FROM requests r
                 JOIN results res ON r.request_id = res.request_id AND r.job_id = ?
-                JOIN cities arr ON r.start_city = arr.city_id
-                JOIN cities dep ON r.end_city = dep.city_id
-                JOIN distances dis ON arr.city_id = dis.end_city AND dep.city_id = dis.start_city 
+                LEFT JOIN cities arr ON r.start_city = arr.city_id
+                LEFT JOIN cities dep ON r.end_city = dep.city_id
+                LEFT JOIN distances dis ON arr.city_id = dis.end_city AND dep.city_id = dis.start_city 
     '''
 
     c.execute(query, (jobId,))
@@ -87,8 +87,10 @@ def getResultForJobId(jobId):
     return listOfResults
 
 def prepareExcel(resultList):
+    # Some sample data.
+    #data = ('Foo', 'Bar', 'Baz')
     header = ('Departure city', 'Arrival city', 'Departure date', 
-        'Departure time', 'Arrival time', 'Price', 'Price per km', 'Fully booked', 'Date obtained')
+        'Departure time', 'Arrival time', 'Price', 'Price per km', 'Fully booked' 'Date obtained')
 
     workbook = xlsxwriter.Workbook('./resultFile/result.xlsx')
     worksheet = workbook.add_worksheet()

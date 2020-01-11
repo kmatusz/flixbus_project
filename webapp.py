@@ -15,8 +15,6 @@ sessions = {} #stores data about current sessions - key is sessionID, value is u
 # Indicates whether during app startup 
 # previous database should be reloaded from startup scripts
 SETUP_DB_FROM_SCRIPT = False #changed to false
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#ustawianie bazy danych nadal u mnie nie działa. Plus gdzieś jest ustawiony czyściciel wyników. Gdzie? Do naprawy
 
 if SETUP_DB_FROM_SCRIPT:
     dbm.setup_before_running()
@@ -204,7 +202,7 @@ def yourJobs():
     loginName = checkAuth()
     if checkIfAdmin(loginName):
         redirect('/adminpanel')
-
+    print("aaaa")
     userJobList=dbm.getUserJobs(loginName)
 
     return template('yourjobs', table=userJobList, isLoggedIn=True, isAdmin=checkIfAdmin(loginName))
@@ -322,9 +320,6 @@ def adminpanelP():
     # if a job is selected: shows the table with results
     if(selected_table):
 
-        #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        #ta zmienna jest nie używana. czemu?
-        showTable = True 
         # selected_table = dbm.getResultForJobId(selectedJob[0])
         selected_table_header, selected_table_content = dbm.getFullTable(selected_table[0])
         # dbm.prepareExcel(resultsForJob)

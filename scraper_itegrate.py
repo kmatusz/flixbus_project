@@ -7,7 +7,7 @@ from crawler_usage import jobRunner
 def runJob(jobID):
     # jobID is a key from a database
     # remember to update last_run column in jobs table
-    job_runner = jobRunner(reset_db=True)
+    job_runner = jobRunner(reset_db=False)
 
     job_runner.run_job_from_job_id(jobID)
 
