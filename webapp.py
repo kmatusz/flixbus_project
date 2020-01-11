@@ -15,6 +15,8 @@ sessions = {} #stores data about current sessions - key is sessionID, value is u
 # Indicates whether during app startup 
 # previous database should be reloaded from startup scripts
 SETUP_DB_FROM_SCRIPT = False #changed to false
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#ustawianie bazy danych nadal u mnie nie działa. Plus gdzieś jest ustawiony czyściciel wyników. Gdzie? Do naprawy
 
 if SETUP_DB_FROM_SCRIPT:
     dbm.setup_before_running()
@@ -118,14 +120,14 @@ def newJob():
     #authentication check
     loginName = checkAuth()
     if checkIfAdmin(loginName):
-        redirect('/adminpanel')
+        redirect('/adminpanel') #admin is redirected to a dedicated pages for him
 
     #change this to -> all cities
     citiesList=dbm.getCityNames()
     
     mes='' #default message -> empty
     #if new job run correctly -> message success
-    #if date wrong -> message date
+    #if date wrong -> message date, etc.
 
     return template('newjob', message=mes, cityList=citiesList, isLoggedIn=True, isAdmin=checkIfAdmin(loginName))
     #formularz dla wyboru nowego joba
@@ -267,7 +269,8 @@ def jobResultsP():
             resultTable=resultsForJob, loginName=loginName, isLoggedIn=True, isAdmin=checkIfAdmin(loginName))
 
 
-#filepath='result.xlsx' #needs to be changes and passed to function
+#filepath is static - bottle doesn't support file generation in the spot (in working memory)
+#this problem is ommited by using more static solution
 @route('/download')
 def download():
     #only for logged in users
@@ -277,17 +280,6 @@ def download():
 
     #path relative to working directory
     return static_file(filename='result.xlsx', root='./resultFile', download=True)
-
-
-#landing page for the admin
-# @route('/adminpanel')
-# def admin():
-#     loginName = checkAuth()
-#     if checkIfAdmin(loginName)==False:
-#         redirect('/login')
-#     #isLoggedIn = False, because it's a variable controling for standard users 
-#     #this is used in a html generation via template (navbar conditioning)
-#     return template('adminpanel', loginName=loginName, isLoggedIn=False, isAdmin=True)
 
 @route('/adminpanel')
 def adminpanel():
@@ -309,7 +301,8 @@ def adminpanel():
         showTable=False, 
         isLoggedIn=False, #admin is not a normal user 
         isAdmin=True)
-
+#     #isLoggedIn = False, because it's a variable controling for standard users 
+#     #this is used in a html generation via template (navbar conditioning)
 
 @route('/adminpanel', method='POST')
 def adminpanelP():
@@ -328,7 +321,10 @@ def adminpanelP():
     selected_table = request.POST.getall('admin_table_choosing')
     # if a job is selected: shows the table with results
     if(selected_table):
-        showTable = True
+
+        #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        #ta zmienna jest nie używana. czemu?
+        showTable = True 
         # selected_table = dbm.getResultForJobId(selectedJob[0])
         selected_table_header, selected_table_content = dbm.getFullTable(selected_table[0])
         # dbm.prepareExcel(resultsForJob)
@@ -343,15 +339,6 @@ def adminpanelP():
         loginName=loginName,
         isLoggedIn=False, #admin is not a normal user 
         isAdmin=True)
-
-    # return template('jobresults', formularList=formList, showTable=showTable,
-    #                 resultTable=resultsForJob, loginName=loginName, isLoggedIn=True, isAdmin=checkIfAdmin(loginName))
-
-
-
-#all the other admin views
-#... to be filled out by Kamil
-
 
 run(host='localhost', port=8060)
 

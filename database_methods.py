@@ -87,10 +87,8 @@ def getResultForJobId(jobId):
     return listOfResults
 
 def prepareExcel(resultList):
-    # Some sample data.
-    #data = ('Foo', 'Bar', 'Baz')
     header = ('Departure city', 'Arrival city', 'Departure date', 
-        'Departure time', 'Arrival time', 'Price', 'Price per km', 'Fully booked' 'Date obtained')
+        'Departure time', 'Arrival time', 'Price', 'Price per km', 'Fully booked', 'Date obtained')
 
     workbook = xlsxwriter.Workbook('./resultFile/result.xlsx')
     worksheet = workbook.add_worksheet()
