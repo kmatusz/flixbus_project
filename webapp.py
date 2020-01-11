@@ -14,7 +14,7 @@ secretKey = "SDMDSIUDSFYODS&TTFS987f9ds7f8sd6DFOUFYWE&FY"
 sessions = {} #stores data about current sessions - key is sessionID, value is username
 # Indicates whether during app startup 
 # previous database should be reloaded from startup scripts
-SETUP_DB_FROM_SCRIPT = True 
+SETUP_DB_FROM_SCRIPT = False #changed to false
 
 if SETUP_DB_FROM_SCRIPT:
     dbm.setup_before_running()
@@ -301,7 +301,7 @@ def adminpanel():
         loginName = loginName,
         tables_list=tables_list, 
         showTable=False, 
-        isLoggedIn=True, 
+        isLoggedIn=False, #admin is not a normal user 
         isAdmin=True)
 
 
@@ -335,7 +335,7 @@ def adminpanelP():
         selected_table_content = selected_table_content,
         showTable=True, 
         loginName=loginName,
-        isLoggedIn=True, 
+        isLoggedIn=False, #admin is not a normal user 
         isAdmin=True)
 
     # return template('jobresults', formularList=formList, showTable=showTable,

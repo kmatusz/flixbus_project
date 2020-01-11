@@ -3,6 +3,7 @@ import pandas as pd
 import os
 
 
+
 class DB:
     def __init__(self, db_path):
         self.db_path = db_path
