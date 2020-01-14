@@ -8,9 +8,11 @@ Our project is an advanced web-scraper of flixbus.com site. The purpose is to au
 #### How to run:
 
 To setup virtual environment type into anaconda prompt:
+
+```
 conda create --name flixbus_project --file requirements.txt
 conda activate web_apps
-
+```
 And run the file webapp.py.
 
 Mock user to test the working of the app:
