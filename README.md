@@ -17,9 +17,10 @@ And run the file webapp.py.
 
 Mock user to test the working of the app:
 
+```
 username: adam
 password: pass1
-
+```
 #### Files and folders description:
 
 **Webapp part:**
