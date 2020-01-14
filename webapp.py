@@ -7,15 +7,15 @@ import logging
 import logging.handlers
 import sqlite3
 import database_methods as dbm
-import scraper_itegrate as scr
 import xlsxwriter
+from crawler_usage import runJob
 
 secretKey = "SDMDSIUDSFYODS&TTFS987f9ds7f8sd6DFOUFYWE&FY"
 sessions = {} #stores data about current sessions - key is sessionID, value is username
 # Indicates whether during app startup 
 # previous database should be reloaded from startup scripts
-DB_PATH = 'test_db.db'
 SETUP_DB_FROM_SCRIPT = True #changed to false
+DB_PATH = 'db/database.db' 
 
 if SETUP_DB_FROM_SCRIPT:
     dbm.setup_before_running()
@@ -195,7 +195,7 @@ def newJobP():
     #preparing for scrapper work - get the job_id from database
     jobForScrapper=dbm.getJobIdByJobName(jobName)
     #run scrapper
-    scr.runJob(jobForScrapper)
+    runJob(jobForScrapper)
 
     return template('newjob', message="ok", cityList=citiesList, isLoggedIn=True, isAdmin=checkIfAdmin(loginName))
 
@@ -227,7 +227,7 @@ def yourJobsP():
     #get the indexes of jobs chosen by a user
     selectedJob = request.POST.getall('checkJob')
     for i in selectedJob:
-        scr.runJob(i)
+        runJob(i)
 
     #action started by button to run all the user's jobs
     doRunAll=request.POST.getall('runAll')
@@ -236,7 +236,7 @@ def yourJobsP():
         for i in userJobList:
             tempList.append(i[0])
         for i in tempList:
-            scr.runJob(i)
+            runJob(i)
 
     return template('yourjobs', table=userJobList, isLoggedIn=True, isAdmin=checkIfAdmin(loginName))
 

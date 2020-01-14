@@ -6,19 +6,7 @@ import xlsxwriter
 from setup_db import DB
 import os
 
-#connect to test_db.db database
-#more important while running those functions
-#conn = sqlite3.connect('db/test_db.db')
-
-DB_PATH = 'test_db.db'
-
-#not used for now, may be usefull for admin pages
-def selectAllUsers(conn):
-    c = conn.cursor()
-    c.execute("SELECT * FROM users")
-    listOfResults=c.fetchall()
-    conn.close()
-    return listOfResults
+DB_PATH = 'db/database.db'
 
 def getFullTable(tableName):
     conn = sqlite3.connect(DB_PATH)

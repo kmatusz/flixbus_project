@@ -7,7 +7,16 @@ import sys
 from setup_db import DB, cursor_as_df, execute_to_df
 from sanitizer import dfSanitizer, dbSanitizer
 
-DB_PATH = 'test_db.db'
+DB_PATH = 'db/database.db'
+
+def runJob(jobID):
+    # jobID is a key from a database
+    # remember to update last_run column in jobs table
+    job_runner = jobRunner()
+    job_runner.run_job_from_job_id(jobID)
+    print("scrapper run for " + str(jobID))
+    return True
+
 
 class ParamsHandler:
     '''
@@ -64,7 +73,7 @@ class SingleParam:
 
 class SingleCrawlerWithDB(Crawler):
     '''
-    Class for crawling with single parameters (to remove?)
+    Class for crawling with single parameters
     '''
 
     def __init__(self, db, param):
@@ -80,7 +89,11 @@ class SingleCrawlerWithDB(Crawler):
 
 
 class jobRunner:
-    def __init__(self, path_to_db= DB_PATH, reset_db=False):
+    '''
+        Class defining interface for running jobs - handles fetching requests from database, running the scraper
+        logging and adding results to database
+    '''
+    def __init__(self, path_to_db=DB_PATH, reset_db=False):
         self.path_to_db = path_to_db
         self.reset_db = reset_db
         self.correctly_setup = False
@@ -101,7 +114,7 @@ class jobRunner:
         if not self.correctly_setup:
             self._setup_before_running()
 
-        # Filter parameters list and get first parameters 
+        # Filter parameters list and get first parameters
         # set with correct request_id
         params = next(params for params in
                       self.params_handler.params_list if
@@ -126,9 +139,6 @@ class jobRunner:
             WHERE job_id = ?''', (job_id,))
 
         return [i[0] for i in self.db.c.fetchall()]
-
-
-
 
     def _setup_before_running(self):
 
@@ -156,17 +166,16 @@ class jobRunner:
         if crawler.results_pd_raw.empty:
             print("empty df")
             log = pd.DataFrame({
-                "request_id": [params.request_id], 
+                "request_id": [params.request_id],
                 "successful": [0],
-                "time": [np.nan], 
+                "time": [np.nan],
                 "details": ["error"]})
             log.to_sql(con=self.db.conn,
-                                         name="execution_logs",
-                                         if_exists="append",
-                                         index=False)
+                       name="execution_logs",
+                       if_exists="append",
+                       index=False)
 
             return None
-
 
         sanitizer = dfSanitizer(df=crawler.results_pd_raw)
         sanitizer.sanitize_df(
@@ -182,22 +191,21 @@ class jobRunner:
                                      if_exists="append",
                                      index=False)
 
-
         # Insert log to database
         log = pd.DataFrame({
-            "request_id": db_sanitizer.df_to_db.head(1).request_id, 
+            "request_id": db_sanitizer.df_to_db.head(1).request_id,
             "successful": 1,
-            "time": db_sanitizer.df_to_db.head(1).time_created, 
+            "time": db_sanitizer.df_to_db.head(1).time_created,
             "details": np.nan})
         log.to_sql(con=self.db.conn,
-                                     name="execution_logs",
-                                     if_exists="append",
-                                     index=False)
-
-
+                   name="execution_logs",
+                   if_exists="append",
+                   index=False)
 
 
 if __name__ == "__main__":
+
+    # Miscallenous tests
 
     job_runner = jobRunner(reset_db=False)
     # job_runner.run_job_from_request_id(4)
