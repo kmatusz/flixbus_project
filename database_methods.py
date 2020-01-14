@@ -10,6 +10,8 @@ import os
 #more important while running those functions
 #conn = sqlite3.connect('db/test_db.db')
 
+DB_PATH = 'test_db.db'
+
 #not used for now, may be usefull for admin pages
 def selectAllUsers(conn):
     c = conn.cursor()
@@ -19,7 +21,7 @@ def selectAllUsers(conn):
     return listOfResults
 
 def getFullTable(tableName):
-    conn = sqlite3.connect('test_db.db')
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     print(f'''SELECT *
                     FROM {tableName}
@@ -35,7 +37,7 @@ def getFullTable(tableName):
 
 #function for generating drop down list in template with user's jobs
 def getUserJobs(loginName):
-    conn = sqlite3.connect('test_db.db')
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute("""SELECT j.job_id, j.job_name, j.time_created, j.last_run 
                     FROM jobs j
@@ -47,7 +49,7 @@ def getUserJobs(loginName):
 
 #get only job_id and job_name from the database for a specific user (for drop-down list generating)
 def getUserJobsNames(loginName):
-    conn = sqlite3.connect('test_db.db')
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute("""SELECT j.job_id, j.job_name 
                     FROM jobs j
@@ -60,7 +62,7 @@ def getUserJobsNames(loginName):
 #jobId can be string 'string' or int :) 
 #Job results -> the most complicated query in the app so far 
 def getResultForJobId(jobId):
-    conn = sqlite3.connect('test_db.db')
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
 
     query = ''' 
@@ -106,7 +108,7 @@ def prepareExcel(resultList):
 
 #for a dropdown lists with defined city names -> in NewJob view
 def getCityNames():
-    conn = sqlite3.connect('test_db.db')
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()  
     c.execute("SELECT city_id, city_name FROM cities")
 
@@ -116,7 +118,7 @@ def getCityNames():
 
 def pushJobToDb(loginName, jobName):
     #user created id
-    conn = sqlite3.connect('test_db.db')
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()  
     c.execute("SELECT user_id FROM users WHERE name='"+loginName+"'")
     idList=c.fetchone()
@@ -127,7 +129,7 @@ def pushJobToDb(loginName, jobName):
     timeCreated=time.strftime("%Y-%m-%d %H:%M:%S") #ready for datetime() command in sqlite3
 
     #creating new Job in the database
-    conn = sqlite3.connect('test_db.db')
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()  
     c.execute("""INSERT INTO jobs (user_created, time_created, job_name)
                 VALUES ('"""+str(userId)+"', datetime('"+timeCreated+"'), '"+jobName+"')")
@@ -138,7 +140,7 @@ def pushJobToDb(loginName, jobName):
 
 #get jobId for a given jobName
 def getJobIdByJobName(jobName):
-    conn = sqlite3.connect('test_db.db')
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()  
     c.execute("SELECT job_id FROM jobs WHERE job_name='"+jobName+"'")
     jobIdList=c.fetchone()
@@ -163,7 +165,7 @@ def requestFromJob(jobName, startCity, endCity, startDate, endDate):
         timeList.append(str(start.date()))
         start += step
 
-    conn = sqlite3.connect('test_db.db')
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()  
 
     for i in range(len(timeList)):
@@ -176,7 +178,7 @@ def requestFromJob(jobName, startCity, endCity, startDate, endDate):
     return True
 
 
-def setup_before_running(path_to_db = "test_db.db"):
+def setup_before_running(path_to_db = DB_PATH):
 
     if os.path.exists(path_to_db):
         # Clear database completely if needed (remove file)

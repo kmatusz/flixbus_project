@@ -2,7 +2,7 @@ import sqlite3
 import pandas as pd
 import os
 
-
+DB_PATH = 'test_db.db'
 
 class DB:
     def __init__(self, db_path):
@@ -58,7 +58,7 @@ class DB:
             self._insert_from_data_frame(table_name, data)
 
 
-def setup_db(path="test_db.db"):
+def setup_db(path=DB_PATH):
     db = DB(path)
     db.run_setup_scripts()
     db.insert_initial_data()

@@ -14,7 +14,8 @@ secretKey = "SDMDSIUDSFYODS&TTFS987f9ds7f8sd6DFOUFYWE&FY"
 sessions = {} #stores data about current sessions - key is sessionID, value is username
 # Indicates whether during app startup 
 # previous database should be reloaded from startup scripts
-SETUP_DB_FROM_SCRIPT = False #changed to false
+DB_PATH = 'test_db.db'
+SETUP_DB_FROM_SCRIPT = True #changed to false
 
 if SETUP_DB_FROM_SCRIPT:
     dbm.setup_before_running()
@@ -34,11 +35,16 @@ def do_login():
         string.ascii_uppercase + string.digits) for _ in range(18))
 
     #checking if password is correct - connecting to the database
-    conn = sqlite3.connect('db/test_db.db')
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute("SELECT password FROM users WHERE name = '"+loginName+"'")
     tempPass0=c.fetchone()
-    tempPass=tempPass0[0]
+    if tempPass0 is not None:
+        tempPass=tempPass0[0]
+    else:
+        tempPass=None
+    
+
     conn.close()
 
     if(tempPass==password):
@@ -50,7 +56,7 @@ def do_login():
         
         #check if a user is and admin -> to redirect to admin panel
         #non-admin users are redirected to /index
-        conn = sqlite3.connect('db/test_db.db')
+        conn = sqlite3.connect(DB_PATH)
         c = conn.cursor()
         c.execute("SELECT admin FROM users WHERE name = '"+loginName+"'")
         tempIfAdmin0=c.fetchone()
@@ -79,7 +85,7 @@ def checkAuth():
 #not only login is necessery to get to the admin pages, but also the admin rights
 def checkIfAdmin(name):
     #check the user info in the database
-    conn = sqlite3.connect('db/test_db.db')
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute("SELECT admin FROM users WHERE name = '"+name+"'")
     tempIfAdmin0=c.fetchone()

@@ -7,6 +7,7 @@ import sys
 from setup_db import DB, cursor_as_df, execute_to_df
 from sanitizer import dfSanitizer, dbSanitizer
 
+DB_PATH = 'test_db.db'
 
 class ParamsHandler:
     '''
@@ -79,7 +80,7 @@ class SingleCrawlerWithDB(Crawler):
 
 
 class jobRunner:
-    def __init__(self, path_to_db="test_db.db", reset_db=False):
+    def __init__(self, path_to_db= DB_PATH, reset_db=False):
         self.path_to_db = path_to_db
         self.reset_db = reset_db
         self.correctly_setup = False
