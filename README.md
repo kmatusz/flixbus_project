@@ -43,3 +43,7 @@ password: pass1
 - db/ - folder containing the database and scripts to create one from scratch
 - log.py - class for logging info about scraping
 - tests/ - manual testing of various parts
+
+
+
+Up-to-date app codes are currently stored at https://github.com/kmatusz/flixbus_project.
